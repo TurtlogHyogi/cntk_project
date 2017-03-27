@@ -215,10 +215,10 @@ def Dataset_create(in_dataset_dir, out_dataset_dir, row, col, framework):
         log.start()
 
 
-my_dataset_dir = r'D:\YSH_Github\dataset\img'
-CIFAR_10 = r'D:\local\cntk\Examples\Image\DataSets\CIFAR-10'
+my_dataset_dir = r'D:\Github\dataset\img\mydataset'
+CIFAR_10 = r'D:\Github\dataset\img\cifar10'
 
-out_dataset_dir = r'D:\YSH_Github\cntk_project\datasets\images\out_data'
+out_dataset_dir = r'D:\Github\dataset\img\mydataset\out_dataset'
     
 if __name__ == '__main__':
     #Dataset_create(CIFAR_10,out_dataset_dir,32,32,3)

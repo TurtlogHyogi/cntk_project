@@ -171,9 +171,11 @@ def Train_result(model_dir):
     return os.listdir(model_dir)
 
 
-my_dataset_dir = r'D:\YSH_Github\dataset\img'
-out_dataset_dir = r'D:\YSH_Github\cntk_project\datasets\images\out_data'
-CIFAR_10 = r'D:\local\cntk\Examples\Image\DataSets\CIFAR-10'    
+
+my_dataset_dir = r'D:\Github\dataset\img\mydataset'
+CIFAR_10 = r'D:\Github\dataset\img\cifar10'
+
+out_dataset_dir = r'D:\Github\dataset\img\mydataset\out_dataset'
 out_model_dir = os.path.join(out_dataset_dir,'model')
 
 

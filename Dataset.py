@@ -95,7 +95,7 @@ def resizing(in_dataset_dir,out_dataset_dir,row,col):
                             pixindex=0
                             abs_in_imgname = os.path.join(abs_in_foldername,in_imgname) # ��ȯ�� �̹��� ������
 
-                            extension = ['.jpg','.png','.jpen','.bmp']
+                            extension = ['.jpg','.png','.jpeg','.bmp']
                             if os.path.splitext(abs_in_imgname)[1] in extension:
                                 out_imgname = '{:0{}d}.png'.format(current_num_img,int(log10(total_img_num)+1))                                                            # abs_out_image�� �ٲ������
                                 abs_out_imgname = os.path.join(abs_out_foldername,out_imgname) # ��ȯ�� �̹��� ������

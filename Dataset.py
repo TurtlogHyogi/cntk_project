@@ -187,6 +187,10 @@ def print_dataset_log():
         logger.info(message)
         time.sleep(1)
 
+########################################################################################################################################################################################################
+##############################################################################      Dataset.py       ###################################################################################################
+########################################################################################################################################################################################################
+
 def Dataset_result(out_dataset_dir):
     found_dir = os.path.exists(out_dataset_dir)
     found_files = os.listdir(out_dataset_dir)
@@ -213,6 +217,7 @@ def Dataset_create(in_dataset_dir, out_dataset_dir, row, col, framework):
         dataset.start()    
         time.sleep(0.2)
         log.start()
+    return print('Dataset creating finished')
 
 
 my_dataset_dir = r'D:\Github\dataset\img\mydataset'

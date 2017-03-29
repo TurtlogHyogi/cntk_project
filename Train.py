@@ -70,7 +70,10 @@ def create_ConvNet():#row=32,col=32,channels=3,out_dim=6):
     return model
 
 
-# �ѹ��� �غ���
+########################################################################################################################################################################################################
+##############################################################################      Train.py        ####################################################################################################
+########################################################################################################################################################################################################
+
 def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, network_name):
     global channels,row,col
     global in_dim,out_dim
@@ -163,21 +166,17 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
 
         return print('Training finished')
 
-
 def Train_result(model_dir):
     if not os.path.exists(model_dir):
         return print('model_dir is not found.')
 
     return os.listdir(model_dir)
 
-
-
 my_dataset_dir = r'D:\Github\dataset\img\mydataset'
 CIFAR_10 = r'D:\Github\dataset\img\cifar10'
 
 out_dataset_dir = r'D:\Github\dataset\img\mydataset\out_dataset'
 out_model_dir = os.path.join(out_dataset_dir,'model')
-
 
 if __name__ == '__main__':
     Train_create(dataset_dir=out_dataset_dir, framework=3, out_model_dir=out_model_dir, max_epochs=80, mb_size=64, network_name='conv')

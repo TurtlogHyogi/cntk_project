@@ -12,10 +12,8 @@ import logging
 # ���� �ϰ������ Dataset�� ���鶧 �Է��� parameter�� ���� �������� �ʹ�
 # => Dataset�Լ��� parameter�� ���������� �����ϸ�ɱ�?
 channels, row, col= 3, 32, 32
-in_dim, out_dim = channels*row*col, 6 #out_dim�� Create_dataset���� global labelnum
-current_img_num, total_img_num = 0, 0
-epoch_size = 5
-#epoch_size = Dataset.total_img_num
+in_dim, out_dim = 0, 0
+epoch_size = 0
 
 # Reader
 def create_reader(Dataset_result,train):
@@ -40,7 +38,6 @@ def create_reader(Dataset_result,train):
         features = cntk.io.StreamDef(field='image', transforms=transforms),
         labels = cntk.io.StreamDef(field='label', shape=out_dim))),
         randomize=train)
-
 
 # Convnet
 def create_ConvNet():#row=32,col=32,channels=3,out_dim=6):    
@@ -69,6 +66,29 @@ def create_ConvNet():#row=32,col=32,channels=3,out_dim=6):
 
     return model
 
+# Read_total_num
+def read_total_num(map_file):
+    total_num = 0
+    with open(map_file,'r') as map:   
+         while True:
+            line = map.readline()
+            if not line:
+                break
+            total_num += 1
+
+    return total_num
+
+# Read_label_num
+def read_label_num(labels_file):
+    label_num = 0
+    with open(labels_file,'r') as label:   
+         while True:
+            line = label.readline()
+            if not line:
+                break
+            label_num += 1
+
+    return label_num
 
 ########################################################################################################################################################################################################
 ##############################################################################      Train.py        ####################################################################################################
@@ -97,6 +117,9 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
     logger.addHandler(filehandler)
     logger.addHandler(streamhandler)
 
+    in_dim, out_dim = channels*row*col, read_label_num(Dataset.Dataset_result(out_dataset_dir)[0])
+    epoch_size = read_label_num(Dataset.Dataset_result(out_dataset_dir)[2])
+
     ##**������Ȯ������
 ##**    cntk.device.set_default_device(cntk.device.gpu(cntk.device.best().type()))
     
@@ -123,7 +146,7 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
             
             # learner ����
             lr_per_sample = [0.0015625]*20+[0.00046875]*20+[0.00015625]*20+[0.000046875]*10+[0.000015625]
-            lr_schedule = cntk.learning_rate_schedule(lr_per_sample, unit=cntk.learner.UnitType.sample, epoch_size=total_img_num)
+            lr_schedule = cntk.learning_rate_schedule(lr_per_sample, unit=cntk.learner.UnitType.sample, epoch_size=epoch_size)
             mm_time_constant = [0]*20+[600]*20+[1200]
             mm_schedule = cntk.learner.momentum_as_time_constant_schedule(mm_time_constant,epoch_size=epoch_size)
             learner = cntk.learner.momentum_sgd(z.parameters, lr=lr_schedule, momentum=mm_schedule, l2_regularization_weight=0.002)

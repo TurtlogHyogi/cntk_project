@@ -156,6 +156,7 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
             
             #progress_printer.epoch_summary(with_metric=True)
             new_sample, new_loss, new_metric = progress_printer.samples_since_start, progress_printer.loss_since_start, progress_printer.metric_since_start
+#            print(new_loss,new_metric,new_sample)
             message = 'epoch = {} of {},'.format(1+epoch,max_epochs)+'loss = %f, metric = %f%%'%(((new_loss-loss)/(new_sample-sample)),100*(new_metric-metric)/(new_sample-sample))
 #            print(message)
             logger.info(message)
@@ -172,10 +173,10 @@ def Train_result(model_dir):
 
     return os.listdir(model_dir)
 
-my_dataset_dir = r'D:\Github\dataset\img\mydataset'
-CIFAR_10 = r'D:\Github\dataset\img\cifar10'
+my_dataset_dir = Dataset.my_dataset_dir # r'D:\Github\dataset\img\mydataset'
+CIFAR_10 = Dataset.CIFAR_10 # r'D:\Github\dataset\img\cifar10'
 
-out_dataset_dir = r'D:\Github\dataset\img\mydataset\out_dataset'
+out_dataset_dir = Dataset.out_dataset_dir # r'D:\Github\dataset\img\mydataset\out_dataset'
 out_model_dir = os.path.join(out_dataset_dir,'model')
 
 if __name__ == '__main__':

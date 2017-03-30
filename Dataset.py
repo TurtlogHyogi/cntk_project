@@ -2,6 +2,7 @@ from __future__ import print_function
 import os
 import cntk
 import numpy as np
+import random
 import threading,time
 import logging
 from PIL import Image
@@ -33,6 +34,47 @@ def get_imgnames(foldername):
 
     return imgnames
 
+def write_list(path_out, image_list):
+    with open(path_out, 'w') as fout:
+        for i, item in enumerate(image_list):
+            line = '%d\t' % item[0]
+            for j in item[2:]:
+                line += '%f\t' % j
+            line += '%s\n' % item[1]
+            fout.write(line)
+
+def list_image(in_dataset_dir, out_dataset_dir):
+    i = 0
+
+    cat = {}
+    for path, dirs, files in os.walk(in_dataset_dir, followlinks=True):
+        dirs.sort()
+        files.sort()
+        for fname in files:
+            fpath = os.path.join(path, fname)
+            suffix = os.path.splitext(fname)[1].lower()
+            if os.path.isfile(fpath) and (suffix in ['.png','.jpeg','jpg']):
+                if path not in cat:
+                    cat[path] = len(cat)
+                yield (i, os.path.relpath(fpath, in_dataset_dir), cat[path])
+                i += 1
+    with open(out_dataset_dir+'/labels.txt','w') as labels:
+        for k, v in sorted(cat.items(), key=lambda x: x[1]):
+            labels.write(os.path.basename(os.path.relpath(k, in_dataset_dir))+'\n')
+
+def make_list(in_dataset_dir, out_dataset_dir):
+    image_list = list_image(in_dataset_dir,out_dataset_dir)
+    image_list = list(image_list)
+    random.seed(100)
+    random.shuffle(image_list)
+    N = len(image_list)
+    chunk_size = N
+    for i in range(1):
+        chunk = image_list[i * int(chunk_size):(i + 1) * int(chunk_size)]
+        str_chunk = ''
+        sep = chunk_size * 1
+        write_list(out_dataset_dir+'/dataset' + '.lst', chunk)
+        
 def resize_to_PNGimg(in_filename,out_filename,row,col):
 
     raw_img = Image.open(in_filename)
@@ -140,7 +182,7 @@ def resizing(in_dataset_dir,out_dataset_dir,row,col):
 #            pixels[i] = '%e'%pixels[i]
             if (i+1) == 3*row*col:
                 mean.write('%e'%pixels[i])
-            else:       
+            else:
                 mean.write('%e'%pixels[i]+' ')
         mean.write('''</data>
   </MeanImg>
@@ -162,6 +204,7 @@ def create_dataset(in_dataset_dir, out_dataset_dir, row, col, framework):
         os.makedirs(out_dataset_dir)
     
     resizing(in_dataset_dir,out_dataset_dir,row,col)
+#    make_list(in_dataset_dir,out_dataset_dir)
     check = 1
     return True
 
@@ -223,7 +266,7 @@ def Dataset_create(in_dataset_dir, out_dataset_dir, row, col, framework):
 my_dataset_dir = r'D:\Github\dataset\img\mydataset'
 CIFAR_10 = r'D:\Github\dataset\img\cifar10'
 
-out_dataset_dir = r'D:\Github\dataset\img\mydataset\out_dataset'
+out_dataset_dir = my_dataset_dir + '/out_dataset'
     
 if __name__ == '__main__':
     #Dataset_create(CIFAR_10,out_dataset_dir,32,32,3)

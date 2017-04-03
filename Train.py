@@ -67,28 +67,17 @@ def create_ConvNet():#row=32,col=32,channels=3,out_dim=6):
     return model
 
 # Read_total_num
-def read_total_num(map_file):
-    total_num = 0
-    with open(map_file,'r') as map:   
+def read_num(file):
+    num = 0
+    with open(file,'r') as file:   
          while True:
-            line = map.readline()
+            line = file.readline()
             if not line:
                 break
-            total_num += 1
+            num += 1
 
-    return total_num
+    return num
 
-# Read_label_num
-def read_label_num(labels_file):
-    label_num = 0
-    with open(labels_file,'r') as label:   
-         while True:
-            line = label.readline()
-            if not line:
-                break
-            label_num += 1
-
-    return label_num
 
 ########################################################################################################################################################################################################
 ##############################################################################      Train.py        ####################################################################################################
@@ -117,8 +106,8 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
     logger.addHandler(filehandler)
     logger.addHandler(streamhandler)
 
-    in_dim, out_dim = channels*row*col, read_label_num(Dataset.Dataset_result(out_dataset_dir)[0])
-    epoch_size = read_label_num(Dataset.Dataset_result(out_dataset_dir)[2])
+    in_dim, out_dim = channels*row*col, read_num(Dataset.Dataset_result(out_dataset_dir)[0])
+    epoch_size = read_num(Dataset.Dataset_result(out_dataset_dir)[2])
 
     ##**������Ȯ������
 ##**    cntk.device.set_default_device(cntk.device.gpu(cntk.device.best().type()))

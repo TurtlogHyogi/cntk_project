@@ -218,7 +218,7 @@ def print_dataset_log():
     logger.setLevel(logging.DEBUG)
     filehandler = logging.FileHandler(os.path.join(out_dataset_dir,'creat_val_db.log'),'w')
     streamhandler = logging.StreamHandler()
-    formatter = logging.Formatter('[%(asctime)s], %(message)s')
+    formatter = logging.Formatter('[%(levelname):%(asctime)s], %(message)s')
     filehandler.setFormatter(formatter)
     streamhandler.setFormatter(formatter)
     logger.addHandler(filehandler)

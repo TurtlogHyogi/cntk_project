@@ -100,7 +100,7 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
     logger.setLevel(logging.DEBUG)
     filehandler = logging.FileHandler(os.path.join(out_dataset_dir,'create_train_db.log'),'w')
     streamhandler = logging.StreamHandler()
-    formatter = logging.Formatter('[%(asctime)s], %(message)s')
+    formatter = logging.Formatter('[%(levelname)s:%(asctime)s], %(message)s')
     filehandler.setFormatter(formatter)
     streamhandler.setFormatter(formatter)
     logger.addHandler(filehandler)

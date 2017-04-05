@@ -161,5 +161,5 @@ out_model_dir = os.path.join(out_dataset_dir,'model')
 
 if __name__ == '__main__':
     print('epoch_size={},out_dim={}'.format(read_num(Dataset.Dataset_result(out_dataset_dir)[2]),read_num(Dataset.Dataset_result(out_dataset_dir)[0])))
-    Train_create(dataset_dir=out_dataset_dir, framework=3, out_model_dir=out_model_dir, max_epochs=80, mb_size=300, network_name='conv')
+    Train_create(dataset_dir=out_dataset_dir, framework=3, out_model_dir=out_model_dir, max_epochs=20, mb_size=300, network_name='conv')
     print(Train_result(out_model_dir))

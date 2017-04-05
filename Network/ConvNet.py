@@ -1,14 +1,21 @@
+import cntk
+import Dataset
+import Train
+#from ..Trin 
 # Convnet
+channels,row,col = 3,32,32
+out_dim = Train.read_num(Dataset.Dataset_result(Dataset.out_dataset_dir)[0])
+
 def create_ConvNet():#row=32,col=32,channels=3,out_dim=6):    
     global channels,row,col
-    global in_dim,out_dim
+    global out_dim
 
-    # input�� label Dim ����
+    # input?? label Dim ????
     input = cntk.blocks.input_variable((channels,row,col))
     label = cntk.blocks.input_variable(out_dim)
     scaled_input = cntk.ops.element_times(input,(1/256))
     
-    # moedl ����
+    # moedl ????
     with cntk.layers.default_options(activation=cntk.ops.relu):
         model = cntk.layers.Sequential([
             cntk.layers.For(range(2),lambda : [

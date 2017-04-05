@@ -1,7 +1,8 @@
 import cntk
 import Dataset
-import Train
-#from ..Trin 
+from .. import Train
+#import cntk_project.Train
+
 # Convnet
 channels,row,col = 3,32,32
 out_dim = Train.read_num(Dataset.Dataset_result(Dataset.out_dataset_dir)[0])

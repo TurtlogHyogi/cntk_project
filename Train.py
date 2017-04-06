@@ -5,14 +5,15 @@ import _cntk_py
 import os
 import Dataset
 import logging
-from Network import ConvNet
+import re
+#from Network import ConvNet
 
 #import cntk_project.Network.ConvNet as ConvNet
 #from ConvNet import create_ConvNet
 #from .Network import Convnet
 # ???? ???????? Dataset?? ???? ????? parameter?? ???? ???????? ???
 # => Dataset????? parameter?? ?????????? ??????????
-channels, row, col= 3, 32, 32
+channels, row, col= 3, 0, 0
 out_dim = 0
 epoch_size = 0
 
@@ -40,6 +41,31 @@ def create_reader(Dataset_result,train):
         labels = cntk.io.StreamDef(field='label', shape=out_dim))),
         randomize=train)
 
+def create_ConvNet():#row=32,col=32,channels=3,out_dim=6):    
+    global channels,row,col
+    global out_dim
+
+    ## input?? label Dim ????
+    #input = cntk.blocks.input_variable((channels,row,col))
+    #label = cntk.blocks.input_variable(out_dim)
+    #scaled_input = cntk.ops.element_times(input,(1/256))
+    # moedl ????
+    with cntk.layers.default_options(activation=cntk.ops.relu):
+        model = cntk.layers.Sequential([
+            cntk.layers.For(range(2),lambda : [
+                cntk.layers.Convolution2D((3,3), 64),
+                cntk.layers.Convolution2D((3,3), 64),
+                cntk.layers.MaxPooling((3,3), strides = 2)
+            ]),
+            cntk.layers.For(range(2),lambda i : [ 
+                cntk.layers.Dense([256,128][i]),
+                cntk.layers.Dropout(0.5)
+            ]),
+            cntk.layers.Dense(out_dim,activation=None)
+        ])
+
+    return model
+
 # Read_total_num
 def read_num(file):
     num = 0
@@ -52,6 +78,15 @@ def read_num(file):
 
     return num
 
+# Read_size
+def read_size(file):
+    with open(file) as mean:
+        p = re.compile('<[a-zA-Z]{3}>[0-9]+</[a-zA-Z]{3}>')
+        while True:
+            line = mean.readline()
+            size = p.search(line)
+            if size:
+                return int((size.group())[5:-6])
 
 ########################################################################################################################################################################################################
 ##############################################################################      Train.py        ####################################################################################################
@@ -67,7 +102,6 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
         return print("Dataset directory is wrong")
 
     if not os.path.exists(out_model_dir):
-        print("out model directory is not found. We make it")
         os.makedirs(out_model_dir)
     
     logger = logging.getLogger('Train')
@@ -79,6 +113,8 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
     streamhandler.setFormatter(formatter)
     logger.addHandler(filehandler)
     logger.addHandler(streamhandler)
+
+    row = col = read_size(Dataset.Dataset_result(out_dataset_dir)[3])
 
     out_dim = read_num(Dataset.Dataset_result(out_dataset_dir)[0])
     epoch_size = read_num(Dataset.Dataset_result(out_dataset_dir)[2])
@@ -101,7 +137,8 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
         # z ????
         if network_name == 'conv':
  
-            z = ConvNet.create_ConvNet()(scaled_input)
+            #z = ConvNet.create_ConvNet()(scaled_input)
+            z = create_ConvNet()(scaled_input)
 
             # ce, pe ????
             ce = cntk.ops.cross_entropy_with_softmax(z,label)
@@ -129,10 +166,8 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
         sample, loss, metric = 0, 0, 0
         # ???? ????
         for epoch in range(max_epochs):
-            print('epoch={}'.format(epoch))
             sample_count = 0
             while sample_count<epoch_size:
-                print('mb_size={},sample_count={},epoch_size-sample_count={}'.format(mb_size,sample_count,epoch_size-sample_count))
                 mb = train_reader.next_minibatch(min(mb_size,epoch_size-sample_count),input_map=input_map)
                 trainer.train_minibatch(mb)
                 sample_count += trainer.previous_minibatch_sample_count
@@ -161,5 +196,15 @@ out_model_dir = os.path.join(out_dataset_dir,'model')
 
 if __name__ == '__main__':
     print('epoch_size={},out_dim={}'.format(read_num(Dataset.Dataset_result(out_dataset_dir)[2]),read_num(Dataset.Dataset_result(out_dataset_dir)[0])))
-    Train_create(dataset_dir=out_dataset_dir, framework=3, out_model_dir=out_model_dir, max_epochs=20, mb_size=300, network_name='conv')
+    Train_create(dataset_dir = out_dataset_dir,
+                 framework = 3, 
+                 out_model_dir = out_model_dir, 
+                 max_epochs = 20, 
+                 mb_size = 300, 
+                 network_name = 'conv')
     print(Train_result(out_model_dir))
+    #print(Dataset.Dataset_result(out_dataset_dir)[3])
+    
+
+    
+    

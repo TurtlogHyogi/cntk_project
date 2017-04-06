@@ -117,9 +117,9 @@ def resizing(in_dataset_dir,out_dataset_dir,row,col):
   <Col>{}</Col>
   <MeanImg type_id="opencv-matrix">
     <rows>1</rows>
-    <cols>3072</cols>
+    <cols>{}</cols>
     <dt>f</dt>
-    <data>'''.format(3,row,col))
+    <data>'''.format(3,row,col,3*row*col))
 
         with open(out_dataset_dir+'./train_data.txt','w') as text:
             with open(out_dataset_dir+'./train_map.txt','w') as map:
@@ -266,6 +266,10 @@ my_dataset_dir = r'D:\Github\dataset\img'
 out_dataset_dir = r'D:\Github\dataset\outdataset'
     
 if __name__ == '__main__':
-    Dataset_create(my_dataset_dir,out_dataset_dir,32,32,3)
+    Dataset_create(in_dataset_dir = my_dataset_dir,
+                   out_dataset_dir = out_dataset_dir,
+                   row = 32,
+                   col = 32,
+                   framework = 3)
     print(Dataset_result(out_dataset_dir))
 

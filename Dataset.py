@@ -96,7 +96,7 @@ def resizing(in_dataset_dir,out_dataset_dir,row,col):
         abs_in_foldername = os.path.join(in_dataset_dir,foldername)
         imgnames = get_imgnames(abs_in_foldername)
         
-        extension = ['.jpg','.png','.jpen','.bmp']
+        extension = ['.jpg','.png','.jpeg','.bmp']
         for imgname in imgnames:
             if os.path.splitext(imgname)[1] in extension:
                 total_img_num += 1

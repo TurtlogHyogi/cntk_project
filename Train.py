@@ -6,16 +6,6 @@ import os
 import Dataset
 import logging
 import re
-#from Network import ConvNet
-
-#import cntk_project.Network.ConvNet as ConvNet
-#from ConvNet import create_ConvNet
-#from .Network import Convnet
-# ???? ???????? Dataset?? ???? ????? parameter?? ???? ???????? ???
-# => Dataset????? parameter?? ?????????? ??????????
-channels, row, col= 3, 0, 0
-out_dim = 0
-epoch_size = 0
 
 # Reader
 def create_reader(Dataset_result,train):
@@ -41,15 +31,10 @@ def create_reader(Dataset_result,train):
         labels = cntk.io.StreamDef(field='label', shape=out_dim))),
         randomize=train)
 
-def create_ConvNet():#row=32,col=32,channels=3,out_dim=6):    
+def create_ConvNet():
     global channels,row,col
     global out_dim
 
-    ## input?? label Dim ????
-    #input = cntk.blocks.input_variable((channels,row,col))
-    #label = cntk.blocks.input_variable(out_dim)
-    #scaled_input = cntk.ops.element_times(input,(1/256))
-    # moedl ????
     with cntk.layers.default_options(activation=cntk.ops.relu):
         model = cntk.layers.Sequential([
             cntk.layers.For(range(2),lambda : [
@@ -63,7 +48,6 @@ def create_ConvNet():#row=32,col=32,channels=3,out_dim=6):
             ]),
             cntk.layers.Dense(out_dim,activation=None)
         ])
-
     return model
 
 # Read_total_num
@@ -75,7 +59,6 @@ def read_num(file):
             if not line:
                 break
             num += 1
-
     return num
 
 # Read_size
@@ -88,14 +71,10 @@ def read_size(file):
             if size:
                 return int((size.group())[5:-6])
 
-########################################################################################################################################################################################################
-##############################################################################      Train.py        ####################################################################################################
-########################################################################################################################################################################################################
 
 def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, network_name):
     global channels,row,col
     global out_dim
-    global total_img_num,current_img_num
     global epoch_size
     
     if not os.path.exists(dataset_dir):
@@ -119,41 +98,31 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
     out_dim = read_num(Dataset.Dataset_result(out_dataset_dir)[0])
     epoch_size = read_num(Dataset.Dataset_result(out_dataset_dir)[2])
 
-    ##**?????????????
-##**    cntk.device.set_default_device(cntk.device.gpu(cntk.device.best().type()))
-    
+#    cntk.device.set_default_device(cntk.device.gpu(cntk.device.best().type()))
+
     if framework == 3: # if cntk
         
         train_reader = create_reader(Dataset.Dataset_result(dataset_dir),True)
     
-        # input?? label shape ????
         input = cntk.blocks.input_variable((channels,row,col))
         scaled_input = cntk.ops.element_times(input,(1/256))
-        label = cntk.blocks.input_variable(out_dim)##** 10?? label ?????? ????
-   
-    ###############################################################################
-    # ???? ???? network_name?? ???? model?? ??????? ??????? ????????
-    #    
-        # z ????
+        label = cntk.blocks.input_variable(out_dim)
+
         if network_name == 'conv':
  
             #z = ConvNet.create_ConvNet()(scaled_input)
             z = create_ConvNet()(scaled_input)
 
-            # ce, pe ????
             ce = cntk.ops.cross_entropy_with_softmax(z,label)
             pe = cntk.ops.classification_error(z,label)
             
-            # learner ????
             lr_per_sample = [0.0015625]*20+[0.00046875]*20+[0.00015625]*20+[0.000046875]*10+[0.000015625]
             lr_schedule = cntk.learning_rate_schedule(lr_per_sample, unit=cntk.learner.UnitType.sample, epoch_size=epoch_size)
             mm_time_constant = [0]*20+[600]*20+[1200]
             mm_schedule = cntk.learner.momentum_as_time_constant_schedule(mm_time_constant,epoch_size=epoch_size)
             learner = cntk.learner.momentum_sgd(z.parameters, lr=lr_schedule, momentum=mm_schedule, l2_regularization_weight=0.002)
 
-            # trainer ????
             trainer = cntk.Trainer(z,(ce,pe),learner)
-    ###############################################################################
     
         input_map = {
             input : train_reader.streams.features,
@@ -161,10 +130,8 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
         }
         
         progress_printer = cntk.utils.ProgressPrinter(tag="Training",num_epochs=max_epochs)
-        #cntk.utils.log_number_of_parameters(z); print()
         
         sample, loss, metric = 0, 0, 0
-        # ???? ????
         for epoch in range(max_epochs):
             sample_count = 0
             while sample_count<epoch_size:
@@ -179,7 +146,6 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
             sample, loss, metric = new_sample, new_loss, new_metric
             
             z.save(os.path.join(out_model_dir, "ConvNet_{}.dnn".format(epoch)))
-        # ???? ???
 
         return print('Training finished')
 
@@ -189,9 +155,11 @@ def Train_result(model_dir):
 
     return os.listdir(model_dir)
 
-my_dataset_dir = Dataset.my_dataset_dir # r'D:\Github\dataset\img\mydataset'
-
-out_dataset_dir = Dataset.out_dataset_dir # r'D:\Github\dataset\img\mydataset\out_dataset'
+channels, row, col= 3, 0, 0
+out_dim = 0
+epoch_size = 0
+my_dataset_dir = Dataset.my_dataset_dir 
+out_dataset_dir = Dataset.out_dataset_dir
 out_model_dir = os.path.join(out_dataset_dir,'model')
 
 if __name__ == '__main__':
@@ -203,8 +171,4 @@ if __name__ == '__main__':
                  mb_size = 300, 
                  network_name = 'conv')
     print(Train_result(out_model_dir))
-    #print(Dataset.Dataset_result(out_dataset_dir)[3])
-    
 
-    
-    

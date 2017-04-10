@@ -9,8 +9,7 @@ out_model_dir = Train.out_model_dir
 if __name__ == '__main__':
     Dataset.Dataset_create(in_dataset_dir = my_dataset_dir,
                            out_dataset_dir = out_dataset_dir,
-                           row = 32,
-                           col = 32,
+                           resize = 32,
                            framework=3)
     print(Dataset.Dataset_result(out_dataset_dir))
     Train.Train_create(dataset_dir = out_dataset_dir,

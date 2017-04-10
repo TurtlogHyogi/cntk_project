@@ -8,12 +8,6 @@ import logging
 from PIL import Image
 from math import log10
 
-total_img_num = 0 # -> epoch_size in Train.py
-current_num_img = 0
-check = 0
-pixels = []
-labelnum = 0
-
 def get_foldernames(in_dataset_dir):
 
     filenames = os.listdir(in_dataset_dir)    
@@ -75,13 +69,13 @@ def make_list(in_dataset_dir, out_dataset_dir):
         sep = chunk_size * 1
         write_list(out_dataset_dir+'/dataset' + '.lst', chunk)
         
-def resize_to_PNGimg(in_filename,out_filename,row,col):
+def resize_to_PNGimg(in_filename,out_filename,resize):
 
     raw_img = Image.open(in_filename)
-    resized_img = raw_img.resize((row,col))
+    resized_img = raw_img.resize((resize,resize))
     resized_img.save(out_filename)               
 
-def resizing(in_dataset_dir,out_dataset_dir,row,col):
+def resizing(in_dataset_dir,out_dataset_dir,resize):
 
     global total_img_num,current_num_img,labelnum,check
     foldernames = [] 
@@ -119,12 +113,12 @@ def resizing(in_dataset_dir,out_dataset_dir,row,col):
     <rows>1</rows>
     <cols>{}</cols>
     <dt>f</dt>
-    <data>'''.format(3,row,col,3*row*col))
+    <data>'''.format(3,resize,resize,3*resize*resize))
 
         with open(out_dataset_dir+'./train_data.txt','w') as text:
             with open(out_dataset_dir+'./train_map.txt','w') as map:
                 with open(out_dataset_dir+'./labels.txt','w') as labels:
-                    for foldername in img_foldernames: # ?????? ???? resize and save data,map,mean by folder
+                    for foldername in img_foldernames: 
                         
                         labels.write(foldername+'\n')
                         abs_in_foldername = os.path.join(in_dataset_dir,foldername)
@@ -135,17 +129,17 @@ def resizing(in_dataset_dir,out_dataset_dir,row,col):
 
                         imgnames = get_imgnames(abs_in_foldername)
        			 
-                        for in_imgname in imgnames: # ???? ???? ??? ??????? ????
+                        for in_imgname in imgnames: 
                             pixindex=0
-                            abs_in_imgname = os.path.join(abs_in_foldername,in_imgname) # ????? ????? ??????
+                            abs_in_imgname = os.path.join(abs_in_foldername,in_imgname) 
 
                             extension = ['.jpg','.png','.jpeg','.bmp']
                             if os.path.splitext(abs_in_imgname)[1] in extension:
-                                out_imgname = '{:0{}d}.png'.format(current_num_img,int(log10(total_img_num)+1))                                                            # abs_out_image?? ????????
-                                abs_out_imgname = os.path.join(abs_out_foldername,out_imgname) # ????? ????? ??????
-                                resize_to_PNGimg(abs_in_imgname,abs_out_imgname,row,col) # ????? resize?? .png?? ????
-                            
-                                text.write('|labels ') # data.txt ???????
+                                out_imgname = '{:0{}d}.png'.format(current_num_img,int(log10(total_img_num)+1))    
+                                abs_out_imgname = os.path.join(abs_out_foldername,out_imgname)
+                                resize_to_PNGimg(abs_in_imgname,abs_out_imgname,resize)
+
+                                text.write('|labels ')
                                 for num in range(labelnum):
                                     if num == label:
                                         text.write('1 ')
@@ -156,15 +150,14 @@ def resizing(in_dataset_dir,out_dataset_dir,row,col):
                                 img = Image.open(abs_out_imgname)
                                 if img.mode == 'RGB':
                                     pix = img.load()
-                                    # rgb?? ???? grayscale??? img.convert()???? pixel?? ????? ???????
-                                    for rgb in range(3): # rgb * row*col
-                                        for y in range(col): # y * col
-                                            for x in range(row): # x
+                                    for rgb in range(3): # rgb * resize*resize
+                                        for y in range(resize): # y * resize
+                                            for x in range(resize): # x
                                                 text.write(str(pix[x,y][rgb])+' ')
                                                 pixel = (pix[x,y][rgb])/total_img_num
  
-                                                if len(pixels) < 3*row*col:
-                                                    pixels.append(pixel) # pixels?? ??????? ?????? ????? ????
+                                                if len(pixels) < 3*resize*resize:
+                                                    pixels.append(pixel) 
                                                 else:
                                                     pixels[pixindex] += (pix[x,y][rgb])/total_img_num
  
@@ -175,8 +168,8 @@ def resizing(in_dataset_dir,out_dataset_dir,row,col):
 
                         label+=1
                         
-        for i in range(3*row*col):
-            if (i+1) == 3*row*col:
+        for i in range(3*resize*resize):
+            if (i+1) == 3*resize*resize:
                 mean.write('%e'%pixels[i])
             else:
                 mean.write('%e'%pixels[i]+' ')
@@ -186,19 +179,17 @@ def resizing(in_dataset_dir,out_dataset_dir,row,col):
 ''')
         check=0 # stop print_log thread
     
-def create_dataset(in_dataset_dir, out_dataset_dir, row, col, framework):
-    # in_dataset_dir?? ????x ????
+def create_dataset(in_dataset_dir, out_dataset_dir, resize, framework):
     if not os.path.exists(in_dataset_dir):
         return print('Dataset directory is Wrong.')
     
-    # in_dataset_dir?? ?????? ???? x
     if not os.listdir(in_dataset_dir):
         return print('Dataset is not found.')
     
     if not os.path.exists(out_dataset_dir):
         os.makedirs(out_dataset_dir)
     
-    resizing(in_dataset_dir,out_dataset_dir,row,col)
+    resizing(in_dataset_dir,out_dataset_dir,resize)
     return True
 
 def print_dataset_log():
@@ -226,9 +217,6 @@ def print_dataset_log():
         print('Dataset creating finished')
         logger.info(message)
         
-########################################################################################################################################################################################################
-##############################################################################      Dataset.py       ###################################################################################################
-########################################################################################################################################################################################################
 
 def Dataset_result(out_dataset_dir):
     found_dir = os.path.exists(out_dataset_dir)
@@ -248,11 +236,11 @@ def Dataset_result(out_dataset_dir):
 
     return found_dataset
     
-def Dataset_create(in_dataset_dir, out_dataset_dir, row, col, framework):
+def Dataset_create(in_dataset_dir, out_dataset_dir, resize, framework):
     global check
     if framework == 3: # CNTK
         log = threading.Thread(target = print_dataset_log)
-        dataset = threading.Thread(target = create_dataset, args=(in_dataset_dir,out_dataset_dir,row,col,framework))
+        dataset = threading.Thread(target = create_dataset, args=(in_dataset_dir,out_dataset_dir,resize,framework))
 
         dataset.start()    
         time.sleep(0.2)
@@ -262,14 +250,19 @@ def Dataset_create(in_dataset_dir, out_dataset_dir, row, col, framework):
             continue
     return True
 
+
+total_img_num = 0 # -> epoch_size in Train.py
+current_num_img = 0
+check = 0
+pixels = []
+labelnum = 0
 my_dataset_dir = r'D:\Github\dataset\img'
 out_dataset_dir = r'D:\Github\dataset\outdataset'
     
 if __name__ == '__main__':
     Dataset_create(in_dataset_dir = my_dataset_dir,
                    out_dataset_dir = out_dataset_dir,
-                   row = 32,
-                   col = 32,
+                   resize = 32,
                    framework = 3)
     print(Dataset_result(out_dataset_dir))
 

@@ -1,12 +1,13 @@
 from __future__ import print_function
 import os
-import cntk
 import numpy as np
 import random
 import threading,time
 import logging
 from PIL import Image
 from math import log10
+import xml.etree.ElementTree as et
+import xml.dom.minidom
 
 def get_foldernames(in_dataset_dir):
 
@@ -75,6 +76,23 @@ def resize_to_PNGimg(in_filename,out_filename,resize):
     resized_img = raw_img.resize((resize,resize))
     resized_img.save(out_filename)               
 
+def savemean(fname,data,resize):
+    root = et.Element('opencv_storage')
+    et.SubElement(root,'Channel').text = '3'
+    et.SubElement(root,'Row').text = str(resize)
+    et.SubElement(root,'Col').text = str(resize)
+    meanImg = et.SubElement(root,'MeanImg', type_id = 'opencv-matrix')
+    et.SubElement(meanImg,'rows').text = '1'
+    et.SubElement(meanImg,'cols').text = str(resize*resize*3)
+    et.SubElement(meanImg,'dt').text = 'f'
+    et.SubElement(meanImg,'data').text = ' '.join('%e' % n for n in data)
+
+    tree = et.ElementTree(root)
+    tree.write(fname) # make fname but it's line is 1
+    x = xml.dom.minidom.parse(fname)
+    with open(fname, 'w') as f:
+        f.write(x.toprettyxml(indent = ' '))
+
 def resizing(in_dataset_dir,out_dataset_dir,resize):
 
     global total_img_num,current_num_img,labelnum,check
@@ -103,80 +121,54 @@ def resizing(in_dataset_dir,out_dataset_dir,resize):
     
     check = 1   # start print_log thread
     
-    with open(out_dataset_dir + './train_mean.xml','w') as mean:
-        mean.write('''<?xml version="1.0" ?>
-<opencv_storage>
-  <Channel>{}</Channel>
-  <Row>{}</Row>
-  <Col>{}</Col>
-  <MeanImg type_id="opencv-matrix">
-    <rows>1</rows>
-    <cols>{}</cols>
-    <dt>f</dt>
-    <data>'''.format(3,resize,resize,3*resize*resize))
-
-        with open(out_dataset_dir+'./train_data.txt','w') as text:
-            with open(out_dataset_dir+'./train_map.txt','w') as map:
-                with open(out_dataset_dir+'./labels.txt','w') as labels:
-                    for foldername in img_foldernames: 
-                        
-                        labels.write(foldername+'\n')
-                        abs_in_foldername = os.path.join(in_dataset_dir,foldername)
-                        abs_out_foldername = os.path.join(out_dataset_dir,'train_db')
-   
-                        if not os.path.exists(abs_out_foldername):
+    with open(out_dataset_dir+'./train_data.txt','w') as text:
+        with open(out_dataset_dir+'./train_map.txt','w') as map:
+            with open(out_dataset_dir+'./labels.txt','w') as labels:
+                for foldername in img_foldernames: 
+                    labels.write(foldername+'\n')
+                    abs_in_foldername = os.path.join(in_dataset_dir,foldername)
+                    abs_out_foldername = os.path.join(out_dataset_dir,'train_db')
+                    if not os.path.exists(abs_out_foldername):
                             os.makedirs(abs_out_foldername)
+                    imgnames = get_imgnames(abs_in_foldername)
+                    for in_imgname in imgnames: 
+                        pixindex=0
+                        abs_in_imgname = os.path.join(abs_in_foldername,in_imgname) 
+                        extension = ['.jpg','.png','.jpeg','.bmp']
+                        if os.path.splitext(abs_in_imgname)[1] in extension:
+                            out_imgname = '{:0{}d}.png'.format(current_num_img,int(log10(total_img_num)+1))    
+                            abs_out_imgname = os.path.join(abs_out_foldername,out_imgname)
+                            resize_to_PNGimg(abs_in_imgname,abs_out_imgname,resize)
 
-                        imgnames = get_imgnames(abs_in_foldername)
-       			 
-                        for in_imgname in imgnames: 
-                            pixindex=0
-                            abs_in_imgname = os.path.join(abs_in_foldername,in_imgname) 
-
-                            extension = ['.jpg','.png','.jpeg','.bmp']
-                            if os.path.splitext(abs_in_imgname)[1] in extension:
-                                out_imgname = '{:0{}d}.png'.format(current_num_img,int(log10(total_img_num)+1))    
-                                abs_out_imgname = os.path.join(abs_out_foldername,out_imgname)
-                                resize_to_PNGimg(abs_in_imgname,abs_out_imgname,resize)
-
-                                text.write('|labels ')
-                                for num in range(labelnum):
-                                    if num == label:
-                                        text.write('1 ')
-                                    else:
-                                        text.write('0 ')
-
-                                text.write('|features ')
-                                img = Image.open(abs_out_imgname)
-                                if img.mode == 'RGB':
-                                    pix = img.load()
-                                    for rgb in range(3): # rgb * resize*resize
-                                        for y in range(resize): # y * resize
-                                            for x in range(resize): # x
-                                                text.write(str(pix[x,y][rgb])+' ')
-                                                pixel = (pix[x,y][rgb])/total_img_num
+                            text.write('|labels ')
+                            for num in range(labelnum):
+                                if num == label:
+                                    text.write('1 ')
+                                else:
+                                    text.write('0 ')
+                            text.write('|features ')
+                            img = Image.open(abs_out_imgname)
+                            if img.mode == 'RGB':
+                                pix = img.load()
+                                for rgb in range(3): # rgb * resize*resize
+                                    for y in range(resize): # y * resize
+                                        for x in range(resize): # x
+                                            text.write(str(pix[x,y][rgb])+' ')
+                                            pixel = (pix[x,y][rgb])/total_img_num
  
-                                                if len(pixels) < 3*resize*resize:
-                                                    pixels.append(pixel) 
-                                                else:
-                                                    pixels[pixindex] += (pix[x,y][rgb])/total_img_num
+                                            if len(pixels) < 3*resize*resize:
+                                                pixels.append(pixel) 
+                                            else:
+                                                pixels[pixindex] += (pix[x,y][rgb])/total_img_num
  
-                                                pixindex = pixindex + 1
-                                    text.write('\n')
-                                    current_num_img += 1
-                                    map.write(abs_out_imgname+'\t'+str(label)+'\n')
+                                            pixindex = pixindex + 1
+                                text.write('\n')
+                                current_num_img += 1
+                                map.write(abs_out_imgname+'\t'+str(label)+'\n')
 
-                        label+=1
-                        
-        for i in range(3*resize*resize):
-            if (i+1) == 3*resize*resize:
-                mean.write('%e'%pixels[i])
-            else:
-                mean.write('%e'%pixels[i]+' ')
-        mean.write('''</data>
-  </MeanImg>
-</opencv_storage>
-''')
+                    label+=1
+        savemean(out_dataset_dir + './train_mean.xml',pixels,resize)
+
         check=0 # stop print_log thread
     
 def create_dataset(in_dataset_dir, out_dataset_dir, resize, framework):

@@ -19,3 +19,4 @@ if __name__ == '__main__':
                        mb_size = 300, 
                        network_name = 'conv')
     print(Train.Train_result(out_model_dir))
+

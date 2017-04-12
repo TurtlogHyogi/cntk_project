@@ -93,10 +93,9 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
     logger.addHandler(filehandler)
     logger.addHandler(streamhandler)
 
-    row = col = read_size(Dataset.Dataset_result(out_dataset_dir)[3])
-
-    out_dim = read_num(Dataset.Dataset_result(out_dataset_dir)[0])
-    epoch_size = read_num(Dataset.Dataset_result(out_dataset_dir)[2])
+    row = col = read_size([xml_file for xml_file in Dataset.Dataset_result(out_dataset_dir) if 'mean.xml' in xml_file][0])
+    out_dim = read_num([map_file for map_file in Dataset.Dataset_result(out_dataset_dir) if 'labels.txt' in map_file][0])
+    epoch_size = read_num([label_file for label_file in Dataset.Dataset_result(out_dataset_dir) if 'map.txt' in label_file][0])
 
 #    cntk.device.set_default_device(cntk.device.gpu(cntk.device.best().type()))
 
@@ -163,12 +162,12 @@ out_dataset_dir = Dataset.out_dataset_dir
 out_model_dir = os.path.join(out_dataset_dir,'model')
 
 if __name__ == '__main__':
-    print('epoch_size={},out_dim={}'.format(read_num(Dataset.Dataset_result(out_dataset_dir)[2]),read_num(Dataset.Dataset_result(out_dataset_dir)[0])))
+    print('epoch_size={},out_dim={}'.format(read_num(Dataset.Dataset_result(out_dataset_dir)[1]),read_num(Dataset.Dataset_result(out_dataset_dir)[0])))
     Train_create(dataset_dir = out_dataset_dir,
                  framework = 3, 
                  out_model_dir = out_model_dir, 
-                 max_epochs = 20, 
-                 mb_size = 300, 
+                 max_epochs = 3, 
+                 mb_size = 50, 
                  network_name = 'conv')
     print(Train_result(out_model_dir))
 

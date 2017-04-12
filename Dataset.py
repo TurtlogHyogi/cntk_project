@@ -48,7 +48,7 @@ def list_image(in_dataset_dir, out_dataset_dir):
         for fname in files:
             fpath = os.path.join(path, fname)
             suffix = os.path.splitext(fname)[1].lower()
-            if os.path.isfile(fpath) and (suffix in ['.png','.jpeg','jpg']):
+            if os.path.isfile(fpath) and (suffix in ['.bmp','.png','.jpeg','.jpg']):
                 if path not in cat:
                     cat[path] = len(cat)
                 yield (i, os.path.relpath(fpath, in_dataset_dir), cat[path])
@@ -60,15 +60,15 @@ def list_image(in_dataset_dir, out_dataset_dir):
 def make_list(in_dataset_dir, out_dataset_dir):
     image_list = list_image(in_dataset_dir,out_dataset_dir)
     image_list = list(image_list)
-    random.seed(100)
-    random.shuffle(image_list)
+    #random.seed(100)
+    #random.shuffle(image_list)
     N = len(image_list)
     chunk_size = N
     for i in range(1):
         chunk = image_list[i * int(chunk_size):(i + 1) * int(chunk_size)]
         str_chunk = ''
         sep = chunk_size * 1
-        write_list(out_dataset_dir+'/dataset' + '.lst', chunk)
+        write_list(out_dataset_dir+'/train_map.txt', chunk)
         
 def resize_to_PNGimg(in_filename,out_filename,resize):
 
@@ -120,56 +120,47 @@ def resizing(in_dataset_dir,out_dataset_dir,resize):
     labelnum = len(img_foldernames)
     
     check = 1   # start print_log thread
-    
-    with open(out_dataset_dir+'./train_data.txt','w') as text:
-        with open(out_dataset_dir+'./train_map.txt','w') as map:
-            with open(out_dataset_dir+'./labels.txt','w') as labels:
-                for foldername in img_foldernames: 
-                    labels.write(foldername+'\n')
-                    abs_in_foldername = os.path.join(in_dataset_dir,foldername)
-                    abs_out_foldername = os.path.join(out_dataset_dir,'train_db')
-                    if not os.path.exists(abs_out_foldername):
-                            os.makedirs(abs_out_foldername)
-                    imgnames = get_imgnames(abs_in_foldername)
-                    for in_imgname in imgnames: 
-                        pixindex=0
-                        abs_in_imgname = os.path.join(abs_in_foldername,in_imgname) 
-                        extension = ['.jpg','.png','.jpeg','.bmp']
-                        if os.path.splitext(abs_in_imgname)[1] in extension:
-                            out_imgname = '{:0{}d}.png'.format(current_num_img,int(log10(total_img_num)+1))    
-                            abs_out_imgname = os.path.join(abs_out_foldername,out_imgname)
-                            resize_to_PNGimg(abs_in_imgname,abs_out_imgname,resize)
 
-                            text.write('|labels ')
-                            for num in range(labelnum):
-                                if num == label:
-                                    text.write('1 ')
-                                else:
-                                    text.write('0 ')
-                            text.write('|features ')
-                            img = Image.open(abs_out_imgname)
-                            if img.mode == 'RGB':
-                                pix = img.load()
-                                for rgb in range(3): # rgb * resize*resize
-                                    for y in range(resize): # y * resize
-                                        for x in range(resize): # x
-                                            text.write(str(pix[x,y][rgb])+' ')
-                                            pixel = (pix[x,y][rgb])/total_img_num
+    with open(out_dataset_dir+'./train_map.txt','w') as map:
+        with open(out_dataset_dir+'./labels.txt','w') as labels:
+            for foldername in img_foldernames: 
+                labels.write(foldername+'\n')
+                abs_in_foldername = os.path.join(in_dataset_dir,foldername)
+                abs_out_foldername = os.path.join(out_dataset_dir,'train_db')
+                if not os.path.exists(abs_out_foldername):
+                        os.makedirs(abs_out_foldername)
+                imgnames = get_imgnames(abs_in_foldername)
+                for in_imgname in imgnames: 
+                    pixindex=0
+                    abs_in_imgname = os.path.join(abs_in_foldername,in_imgname) 
+                    extension = ['.jpg','.png','.jpeg','.bmp']
+                    if os.path.splitext(abs_in_imgname)[1] in extension:
+                        out_imgname = '{:0{}d}.png'.format(current_num_img,int(log10(total_img_num)+1))    
+                        abs_out_imgname = os.path.join(abs_out_foldername,out_imgname)
+                        resize_to_PNGimg(abs_in_imgname,abs_out_imgname,resize)
+
+                        img = Image.open(abs_out_imgname)
+                        if img.mode == 'RGB':
+                            arr = np.array(img,dtype=np.float32)
+                            pix = img.load()
+                            for rgb in range(3): # rgb * resize*resize
+                                for y in range(resize): # y * resize
+                                    for x in range(resize): # x
+                                        pixel = (pix[x,y][rgb])/total_img_num
  
-                                            if len(pixels) < 3*resize*resize:
-                                                pixels.append(pixel) 
-                                            else:
-                                                pixels[pixindex] += (pix[x,y][rgb])/total_img_num
+                                        if len(pixels) < 3*resize*resize:
+                                            pixels.append(pixel) 
+                                        else:
+                                            pixels[pixindex] += (pix[x,y][rgb])/total_img_num
  
-                                            pixindex = pixindex + 1
-                                text.write('\n')
-                                current_num_img += 1
-                                map.write(abs_out_imgname+'\t'+str(label)+'\n')
+                                        pixindex = pixindex + 1
+                            current_num_img += 1
+                            map.write(abs_out_imgname+'\t'+str(label)+'\n')
 
-                    label+=1
-        savemean(out_dataset_dir + './train_mean.xml',pixels,resize)
+            label+=1
+    savemean(out_dataset_dir + './train_mean.xml',pixels,resize)
 
-        check=0 # stop print_log thread
+    check=0 # stop print_log thread
     
 def create_dataset(in_dataset_dir, out_dataset_dir, resize, framework):
     if not os.path.exists(in_dataset_dir):
@@ -252,9 +243,11 @@ my_dataset_dir = r'D:\Github\dataset\img'
 out_dataset_dir = r'D:\Github\dataset\outdataset'
     
 if __name__ == '__main__':
-    Dataset_create(in_dataset_dir = my_dataset_dir,
-                   out_dataset_dir = out_dataset_dir,
-                   resize = 32,
-                   framework = 3)
-    print(Dataset_result(out_dataset_dir))
+#    Dataset_create(in_dataset_dir = my_dataset_dir,
+#                   out_dataset_dir = out_dataset_dir,
+#                   resize = 32,
+#                   framework = 3)
+#    print(Dataset_result(out_dataset_dir))
+    create_dataset(my_dataset_dir,out_dataset_dir,32,3)
+#    make_list(my_dataset_dir,out_dataset_dir+'2')
 

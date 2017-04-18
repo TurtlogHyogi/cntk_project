@@ -121,6 +121,8 @@ def resizing(in_dataset_dir,out_dataset_dir,resize):
     
     check = 1   # start print_log thread
 
+    img_mean = np.zeros((resize,resize,3)) 
+
     with open(out_dataset_dir+'./train_map.txt','w') as map:
         with open(out_dataset_dir+'./labels.txt','w') as labels:
             for foldername in img_foldernames: 
@@ -142,6 +144,7 @@ def resizing(in_dataset_dir,out_dataset_dir,resize):
                         img = Image.open(abs_out_imgname)
                         if img.mode == 'RGB':
                             arr = np.array(img,dtype=np.float32)
+                            img_mean += arr/total_img_num
                             pix = img.load()
                             for rgb in range(3): # rgb * resize*resize
                                 for y in range(resize): # y * resize
@@ -158,6 +161,8 @@ def resizing(in_dataset_dir,out_dataset_dir,resize):
                             map.write(abs_out_imgname+'\t'+str(label)+'\n')
 
             label+=1
+    img_mean = np.ascontiguousarray(np.transpose(img_mean,(2,0,1)))
+    img_mean = img_mean.reshape(1,3*resize*resize)
     savemean(out_dataset_dir + './train_mean.xml',pixels,resize)
 
     check=0 # stop print_log thread

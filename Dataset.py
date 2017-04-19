@@ -123,8 +123,8 @@ def resizing(in_dataset_dir,out_dataset_dir,resize):
 
     img_mean = np.zeros((resize,resize,3)) 
 
-    with open(out_dataset_dir+'./train_map.txt','w') as map:
-        with open(out_dataset_dir+'./labels.txt','w') as labels:
+    with open(out_dataset_dir+'/train_map.txt','w') as map:
+        with open(out_dataset_dir+'/labels.txt','w') as labels:
             for foldername in img_foldernames: 
                 labels.write(foldername+'\n')
                 abs_in_foldername = os.path.join(in_dataset_dir,foldername)
@@ -163,7 +163,7 @@ def resizing(in_dataset_dir,out_dataset_dir,resize):
             label+=1
     img_mean = np.ascontiguousarray(np.transpose(img_mean,(2,0,1)))
     img_mean = img_mean.reshape(1,3*resize*resize)
-    savemean(out_dataset_dir + './train_mean.xml',pixels,resize)
+    savemean(out_dataset_dir + '/train_mean.xml',pixels,resize)
 
     check=0 # stop print_log thread
     
@@ -222,6 +222,8 @@ def Dataset_result(out_dataset_dir):
             found_file = os.path.join(out_dataset_dir,found_file)
             found_dataset.append(found_file)
 
+    found_dataset.sort()
+
     return found_dataset
     
 def Dataset_create(in_dataset_dir, out_dataset_dir, resize, framework):
@@ -231,7 +233,7 @@ def Dataset_create(in_dataset_dir, out_dataset_dir, resize, framework):
         dataset = threading.Thread(target = create_dataset, args=(in_dataset_dir,out_dataset_dir,resize,framework))
 
         dataset.start()    
-        time.sleep(0.2)
+        time.sleep(0.1)
         log.start()
         while check:
             time.sleep(1)
@@ -244,15 +246,17 @@ current_num_img = 0
 check = 0
 pixels = []
 labelnum = 0
-my_dataset_dir = r'D:\Github\dataset\img'
-out_dataset_dir = r'D:\Github\dataset\outdataset'
+#w_my_dataset_dir = r'D:\Github\dataset\img'
+#w_out_dataset_dir = r'D:\Github\dataset\outdataset'
+my_dataset_dir = r'/root/git/cntk_dataset/img'
+out_dataset_dir = my_dataset_dir+'/../out_dataset'
     
 if __name__ == '__main__':
-#    Dataset_create(in_dataset_dir = my_dataset_dir,
-#                   out_dataset_dir = out_dataset_dir,
-#                   resize = 32,
-#                   framework = 3)
-#    print(Dataset_result(out_dataset_dir))
-    create_dataset(my_dataset_dir,out_dataset_dir,32,3)
-#    make_list(my_dataset_dir,out_dataset_dir+'2')
+    Dataset_create(in_dataset_dir = my_dataset_dir,
+                   out_dataset_dir = out_dataset_dir,
+                   resize = 32,
+                   framework = 3)
+    print(Dataset_result(out_dataset_dir))
+#    create_dataset(my_dataset_dir,out_dataset_dir,32,3)
+#    make_list(l_my_dataset_dir,out_dataset_dir+'2')
 

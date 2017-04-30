@@ -16,7 +16,8 @@ def create_reader(Dataset_result,train):
             mean_file = file
     if not os.path.exists(map_file) or not os.path.exists(mean_file):
         return print (r'map.txt or mean.xml file is not found')
-    
+    print(map_file)
+    print(mean_file)
     transforms = []
     if train:
         transforms +=[
@@ -97,7 +98,7 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
     out_dim = read_num([map_file for map_file in Dataset.Dataset_result(out_dataset_dir) if 'labels.txt' in map_file][0])
     epoch_size = read_num([label_file for label_file in Dataset.Dataset_result(out_dataset_dir) if 'map.txt' in label_file][0])
 
-#    cntk.device.set_default_device(cntk.device.gpu(cntk.device.best().type()))
+    cntk.device.set_default_device(cntk.device.gpu(cntk.device.best().type()))
 
     if framework == 3: # if cntk
         

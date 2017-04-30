@@ -1,10 +1,12 @@
 import Dataset
 import Train
 
-my_dataset_dir = Dataset.my_dataset_dir # r'D:\Github\dataset\img\mydataset'
-
-out_dataset_dir = Dataset.out_dataset_dir # r'D:\Github\dataset\img\mydataset\out_dataset'
-out_model_dir = Train.out_model_dir
+w_my_dataset_dir = Dataset.w_my_dataset_dir
+l_my_dataset_dir = Dataset.l_my_dataset_dir
+w_out_dataset_dir = Dataset.w_out_dataset_dir
+l_out_dataset_dir = Dataset.l_out_dataset_dir
+w_out_model_dir = Train.w_out_model_dir
+l_out_model_dir = Train.l_out_model_dir
 
 if __name__ == '__main__':
     Dataset.Dataset_create(in_dataset_dir = my_dataset_dir,

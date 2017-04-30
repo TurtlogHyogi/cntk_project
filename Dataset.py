@@ -85,7 +85,8 @@ def savemean(fname,data,resize):
     et.SubElement(meanImg,'rows').text = '1'
     et.SubElement(meanImg,'cols').text = str(resize*resize*3)
     et.SubElement(meanImg,'dt').text = 'f'
-    et.SubElement(meanImg,'data').text = ' '.join('%e' % n for n in data)
+
+    et.SubElement(meanImg,'data').text = ' '.join('%e' % data[i] for i in range(3072))
 
     tree = et.ElementTree(root)
     tree.write(fname) # make fname but it's line is 1
@@ -145,26 +146,13 @@ def resizing(in_dataset_dir,out_dataset_dir,resize):
                         if img.mode == 'RGB':
                             arr = np.array(img,dtype=np.float32)
                             img_mean += arr/total_img_num
-                            pix = img.load()
-                            for rgb in range(3): # rgb * resize*resize
-                                for y in range(resize): # y * resize
-                                    for x in range(resize): # x
-                                        pixel = (pix[x,y][rgb])/total_img_num
- 
-                                        if len(pixels) < 3*resize*resize:
-                                            pixels.append(pixel) 
-                                        else:
-                                            pixels[pixindex] += (pix[x,y][rgb])/total_img_num
- 
-                                        pixindex = pixindex + 1
                             current_num_img += 1
                             map.write(abs_out_imgname+'\t'+str(label)+'\n')
 
             label+=1
     img_mean = np.ascontiguousarray(np.transpose(img_mean,(2,0,1)))
-    img_mean = img_mean.reshape(1,3*resize*resize)
-    savemean(out_dataset_dir + './train_mean.xml',pixels,resize)
-
+    img_mean = img_mean.reshape(3*resize*resize)
+    savemean(out_dataset_dir + './train_mean.xml',img_mean,resize)
     check=0 # stop print_log thread
     
 def create_dataset(in_dataset_dir, out_dataset_dir, resize, framework):
@@ -242,17 +230,15 @@ def Dataset_create(in_dataset_dir, out_dataset_dir, resize, framework):
 total_img_num = 0 # -> epoch_size in Train.py
 current_num_img = 0
 check = 0
-pixels = []
 labelnum = 0
-my_dataset_dir = r'D:\Github\dataset\img'
-out_dataset_dir = r'D:\Github\dataset\outdataset'
-    
-if __name__ == '__main__':
-#    Dataset_create(in_dataset_dir = my_dataset_dir,
-#                   out_dataset_dir = out_dataset_dir,
-#                   resize = 32,
-#                   framework = 3)
-#    print(Dataset_result(out_dataset_dir))
-    create_dataset(my_dataset_dir,out_dataset_dir,32,3)
-#    make_list(my_dataset_dir,out_dataset_dir+'2')
+w_my_dataset_dir = r'D:\Github\cntk_dataset\img'
+w_out_dataset_dir = r'D:\Github\cntk_dataset\outdataset'
+l_my_dataset_dir = r'/root/git/cntk_dataset/img'
+l_out_dataset_dir = r'/root/git/cntk_dataset/out_dataset'
 
+if __name__ == '__main__':
+    Dataset_create(in_dataset_dir = w_my_dataset_dir,
+                   out_dataset_dir = w_out_dataset_dir,
+                   resize = 32,
+                   framework = 3)
+    print(Dataset_result(w_out_dataset_dir))

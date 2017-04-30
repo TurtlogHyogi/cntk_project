@@ -86,7 +86,7 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
     
     logger = logging.getLogger('Train')
     logger.setLevel(logging.DEBUG)
-    filehandler = logging.FileHandler(os.path.join(out_dataset_dir,'create_train_db.log'),'w')
+    filehandler = logging.FileHandler(os.path.join(w_out_dataset_dir,'create_train_db.log'),'w')
     streamhandler = logging.StreamHandler()
     formatter = logging.Formatter('[%(levelname)s:%(asctime)s], %(message)s')
     filehandler.setFormatter(formatter)
@@ -94,9 +94,9 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
     logger.addHandler(filehandler)
     logger.addHandler(streamhandler)
 
-    row = col = read_size([xml_file for xml_file in Dataset.Dataset_result(out_dataset_dir) if 'mean.xml' in xml_file][0])
-    out_dim = read_num([map_file for map_file in Dataset.Dataset_result(out_dataset_dir) if 'labels.txt' in map_file][0])
-    epoch_size = read_num([label_file for label_file in Dataset.Dataset_result(out_dataset_dir) if 'map.txt' in label_file][0])
+    row = col = read_size([xml_file for xml_file in Dataset.Dataset_result(w_out_dataset_dir) if 'mean.xml' in xml_file][0])
+    out_dim = read_num([map_file for map_file in Dataset.Dataset_result(w_out_dataset_dir) if 'labels.txt' in map_file][0])
+    epoch_size = read_num([label_file for label_file in Dataset.Dataset_result(w_out_dataset_dir) if 'map.txt' in label_file][0])
 
     cntk.device.set_default_device(cntk.device.gpu(cntk.device.best().type()))
 
@@ -162,8 +162,8 @@ w_my_dataset_dir = Dataset.w_my_dataset_dir
 l_my_dataset_dir = Dataset.l_my_dataset_dir
 w_out_dataset_dir = Dataset.w_out_dataset_dir
 l_out_dataset_dir = Dataset.l_out_dataset_dir
-w_out_model_dir = Train.w_out_model_dir
-l_out_model_dir = Train.l_out_model_dir
+w_out_model_dir = Dataset.w_out_dataset_dir + '/model'
+l_out_model_dir = Dataset.l_out_dataset_dir + '/model'
 
 if __name__ == '__main__':
     print('epoch_size={},out_dim={}'.format(read_num(Dataset.Dataset_result(w_out_dataset_dir)[1]),read_num(Dataset.Dataset_result(w_out_dataset_dir)[0])))

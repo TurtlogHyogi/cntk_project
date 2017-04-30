@@ -151,14 +151,8 @@ def resizing(in_dataset_dir,out_dataset_dir,resize):
 
             label+=1
     img_mean = np.ascontiguousarray(np.transpose(img_mean,(2,0,1)))
-<<<<<<< HEAD
     img_mean = img_mean.reshape(3*resize*resize)
     savemean(out_dataset_dir + './train_mean.xml',img_mean,resize)
-=======
-    img_mean = img_mean.reshape(1,3*resize*resize)
-    savemean(out_dataset_dir + '/train_mean.xml',pixels,resize)
-
->>>>>>> 01984e76accab920a2b18443b8730f5fcf2c008c
     check=0 # stop print_log thread
     
 def create_dataset(in_dataset_dir, out_dataset_dir, resize, framework):

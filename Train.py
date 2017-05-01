@@ -6,6 +6,7 @@ import os
 import Dataset
 import logging
 import re
+from importlib import import_module
 
 # Reader
 def create_reader(Dataset_result,train):
@@ -108,11 +109,10 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
         scaled_input = cntk.ops.element_times(input,(1/256))
         label = cntk.blocks.input_variable(out_dim)
 
-        if network_name == 'conv':
+        if network_name == 'convnet':
  
-            #z = ConvNet.create_ConvNet()(scaled_input)
-            z = create_ConvNet()(scaled_input)
-
+            z = import_module('network.'+network_name).create_ConvNet()(scaled_input)
+            
             ce = cntk.ops.cross_entropy_with_softmax(z,label)
             pe = cntk.ops.classification_error(z,label)
             
@@ -172,6 +172,6 @@ if __name__ == '__main__':
                  out_model_dir = w_out_model_dir, 
                  max_epochs = 3, 
                  mb_size = 50, 
-                 network_name = 'conv')
+                 network_name = 'convnet')
     print(Train_result(w_out_model_dir))
 

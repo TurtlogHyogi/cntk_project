@@ -22,26 +22,26 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="1.py" />
     <Compile Include="Dataset.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="main.py" />
-    <Compile Include="Network\ConvNet.py">
+    <Compile Include="network\convnet.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Network\__init__.py">
+    <Compile Include="network\__init__.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Train.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="utils.py" />
     <Compile Include="__init__.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Network\" />
+    <Folder Include="network\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

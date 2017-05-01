@@ -1,16 +1,13 @@
 import cntk
-from .. import Dataset
+#from .. import Dataset
 #import Dataset
-from .. import Train
+#from .. import Train
 
 # Convnet
 channels,row,col = 3,32,32
-print(Dataset.Dataset_result(Dataset.out_dataset_dir)[0])
-out_dim = Train.read_num(Dataset.Dataset_result(Dataset.out_dataset_dir)[0])
 
-def create_ConvNet():#row=32,col=32,channels=3,out_dim=6):    
+def create_ConvNet(out_dim=42):#row=32,col=32,channels=3,out_dim=6):    
     global channels,row,col
-    global out_dim
 
     # input?? label Dim ????
     #input = cntk.blocks.input_variable((channels,row,col))

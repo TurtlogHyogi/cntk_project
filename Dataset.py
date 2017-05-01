@@ -125,7 +125,6 @@ def resizing(in_dataset_dir,out_dataset_dir,resize,dataset_args):
                             map.write(abs_out_imgname+'\t'+str(label)+'\n')
 
                 label+=1
-#                print(dataset_args.current_img_num)
     img_mean = np.ascontiguousarray(np.transpose(img_mean,(2,0,1)))
     img_mean = img_mean.reshape(3*resize*resize)
     savemean(out_dataset_dir + './train_mean.xml',img_mean, dataset_args)

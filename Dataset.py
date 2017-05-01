@@ -29,47 +29,6 @@ def get_imgnames(foldername):
 
     return imgnames
 
-def write_list(path_out, image_list):
-    with open(path_out, 'w') as fout:
-        for i, item in enumerate(image_list):
-            line = '%d\t' % item[0]
-            for j in item[2:]:
-                line += '%f\t' % j
-            line += '%s\n' % item[1]
-            fout.write(line)
-
-def list_image(in_dataset_dir, out_dataset_dir):
-    i = 0
-
-    cat = {}
-    for path, dirs, files in os.walk(in_dataset_dir, followlinks=True):
-        dirs.sort()
-        files.sort()
-        for fname in files:
-            fpath = os.path.join(path, fname)
-            suffix = os.path.splitext(fname)[1].lower()
-            if os.path.isfile(fpath) and (suffix in ['.bmp','.png','.jpeg','.jpg']):
-                if path not in cat:
-                    cat[path] = len(cat)
-                yield (i, os.path.relpath(fpath, in_dataset_dir), cat[path])
-                i += 1
-    with open(out_dataset_dir+'/labels.txt','w') as labels:
-        for k, v in sorted(cat.items(), key=lambda x: x[1]):
-            labels.write(os.path.basename(os.path.relpath(k, in_dataset_dir))+'\n')
-
-def make_list(in_dataset_dir, out_dataset_dir):
-    image_list = list_image(in_dataset_dir,out_dataset_dir)
-    image_list = list(image_list)
-    #random.seed(100)
-    #random.shuffle(image_list)
-    N = len(image_list)
-    chunk_size = N
-    for i in range(1):
-        chunk = image_list[i * int(chunk_size):(i + 1) * int(chunk_size)]
-        str_chunk = ''
-        sep = chunk_size * 1
-        write_list(out_dataset_dir+'/train_map.txt', chunk)
-        
 def resize_to_PNGimg(in_filename,out_filename,resize):
 
     raw_img = Image.open(in_filename)
@@ -149,7 +108,7 @@ def resizing(in_dataset_dir,out_dataset_dir,resize):
                             current_num_img += 1
                             map.write(abs_out_imgname+'\t'+str(label)+'\n')
 
-            label+=1
+                label+=1
     img_mean = np.ascontiguousarray(np.transpose(img_mean,(2,0,1)))
     img_mean = img_mean.reshape(3*resize*resize)
     savemean(out_dataset_dir + './train_mean.xml',img_mean,resize)
@@ -176,7 +135,7 @@ def print_dataset_log():
     
     logger = logging.getLogger('Dataset')
     logger.setLevel(logging.DEBUG)
-    filehandler = logging.FileHandler(os.path.join(out_dataset_dir,'creat_val_db.log'),'w')
+    filehandler = logging.FileHandler(os.path.join(w_out_dataset_dir,'creat_val_db.log'),'w')
     streamhandler = logging.StreamHandler()
     formatter = logging.Formatter('[%(levelname)s:%(asctime)s], %(message)s')
     filehandler.setFormatter(formatter)

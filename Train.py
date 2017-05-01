@@ -162,8 +162,8 @@ w_my_dataset_dir = Dataset.w_my_dataset_dir
 l_my_dataset_dir = Dataset.l_my_dataset_dir
 w_out_dataset_dir = Dataset.w_out_dataset_dir
 l_out_dataset_dir = Dataset.l_out_dataset_dir
-w_out_model_dir = Train.w_out_model_dir
-l_out_model_dir = Train.l_out_model_dir
+w_out_model_dir = Dataset.w_out_dataset_dir + '/model'
+l_out_model_dir = Dataset.l_out_dataset_dir + '/model'
 
 if __name__ == '__main__':
     print('epoch_size={},out_dim={}'.format(read_num(Dataset.Dataset_result(w_out_dataset_dir)[1]),read_num(Dataset.Dataset_result(w_out_dataset_dir)[0])))

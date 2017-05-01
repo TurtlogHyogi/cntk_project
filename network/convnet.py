@@ -1,7 +1,7 @@
 import cntk
 
 # Convnet
-def create_ConvNet(train_args):
+def get_network(train_args):
     with cntk.layers.default_options(activation=cntk.ops.relu):
         model = cntk.layers.Sequential([
             cntk.layers.For(range(2),lambda : [

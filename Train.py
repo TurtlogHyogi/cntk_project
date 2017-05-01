@@ -104,7 +104,7 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
 
         if network_name == 'convnet':
  
-            z = import_module('network.'+network_name).create_ConvNet(train_args)(scaled_input)
+            z = import_module('network.'+network_name).get_network(train_args)(scaled_input)
             
             ce = cntk.ops.cross_entropy_with_softmax(z,label)
             pe = cntk.ops.classification_error(z,label)

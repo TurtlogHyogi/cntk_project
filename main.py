@@ -21,4 +21,3 @@ if __name__ == '__main__':
                        mb_size = 300, 
                        network_name = 'convnet')
     print(Train.Train_result(w_out_model_dir))
-

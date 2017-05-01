@@ -19,6 +19,6 @@ if __name__ == '__main__':
                        out_model_dir = w_out_model_dir, 
                        max_epochs = 3, 
                        mb_size = 300, 
-                       network_name = 'conv')
+                       network_name = 'convnet')
     print(Train.Train_result(w_out_model_dir))
 

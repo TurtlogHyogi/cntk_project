@@ -1,14 +1,13 @@
 from __future__ import print_function
+import argparse
 import os
 import numpy as np
-import random
-import threading,time
-import logging
 from PIL import Image
 from math import log10
 import xml.etree.ElementTree as et
 import xml.dom.minidom
-import argparse
+import threading,time
+import logging
 
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, description='Create dataset(resized_img,mean_xml,map.txt,label,txt)')
@@ -25,10 +24,9 @@ def parse_args():
 
     return args
 
-def get_foldernames(in_dataset_dir):
+def list_get_foldernames(in_dataset_dir):
     filenames = os.listdir(in_dataset_dir)    
     foldernames = []
-
     for filename in filenames:
         ext = os.path.splitext(filename)[-1]
         if ext == '':
@@ -36,7 +34,7 @@ def get_foldernames(in_dataset_dir):
 
     return foldernames
 
-def get_imgnames(foldername):
+def list_get_imgnames(foldername):
     imgnames = []
     imgnames = os.listdir(foldername)    
 
@@ -66,9 +64,8 @@ def savemean(fname,data,dataset_args):
         f.write(x.toprettyxml(indent = ' '))
 
 def resizing(in_dataset_dir,out_dataset_dir,resize,dataset_args):
-    foldernames = get_foldernames(in_dataset_dir)
+    foldernames = list_get_foldernames(in_dataset_dir)
     label=0
-
     img_mean = np.zeros((resize,resize,3)) 
 
     with open(out_dataset_dir+'/train_map.txt','w') as map:
@@ -80,7 +77,7 @@ def resizing(in_dataset_dir,out_dataset_dir,resize,dataset_args):
                 abs_out_foldername = os.path.join(out_dataset_dir,'train_db')
                 if not os.path.exists(abs_out_foldername):
                         os.makedirs(abs_out_foldername)
-                imgnames = get_imgnames(abs_in_foldername)
+                imgnames = list_get_imgnames(abs_in_foldername)
                 
                 for in_imgname in imgnames: 
                     pixindex=0
@@ -166,11 +163,11 @@ def Dataset_create(in_dataset_dir, out_dataset_dir, resize, framework):
         dataset_args.out = out_dataset_dir
         dataset_args.resize = resize
     
-        foldernames = get_foldernames(in_dataset_dir)
+        foldernames = list_get_foldernames(in_dataset_dir)
 
         for foldername in foldernames:
             abs_in_foldername = os.path.join(in_dataset_dir,foldername)
-            imgnames = get_imgnames(abs_in_foldername)
+            imgnames = list_get_imgnames(abs_in_foldername)
         
             extension = ['.jpg','.png','.jpeg','.bmp']
             for imgname in imgnames:

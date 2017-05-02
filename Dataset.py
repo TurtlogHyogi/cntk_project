@@ -9,6 +9,7 @@ import xml.dom.minidom
 import threading,time
 import logging
 
+# set default dataset_args
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, description='Create dataset(resized_img,mean_xml,map.txt,label,txt)')
     parser.add_argument('--root', default='/', help='path to folder containing images.')
@@ -24,6 +25,7 @@ def parse_args():
 
     return args
 
+# get foldernames -> return foldernames, type(foldernames)==list
 def list_get_foldernames(in_dataset_dir):
     filenames = os.listdir(in_dataset_dir)    
     foldernames = []
@@ -34,17 +36,20 @@ def list_get_foldernames(in_dataset_dir):
 
     return foldernames
 
+# get imgnames -> return imgnames, type(imgnames)==list
 def list_get_imgnames(foldername):
     imgnames = []
     imgnames = os.listdir(foldername)    
 
     return imgnames
 
+# save : raw_img -> resized_img(.png)
 def resize_to_PNGimg(in_filename,out_filename,resize):
     raw_img = Image.open(in_filename)
     resized_img = raw_img.resize((resize,resize))
     resized_img.save(out_filename)               
 
+# save : RGB mean.xml
 def savemean(fname,data,dataset_args):
     root = et.Element('opencv_storage')
     et.SubElement(root,'Channel').text = str(dataset_args.channel)
@@ -58,7 +63,7 @@ def savemean(fname,data,dataset_args):
     et.SubElement(meanImg,'data').text = ' '.join('%e' % data[i] for i in range(dataset_args.channel*dataset_args.resize*dataset_args.resize))
 
     tree = et.ElementTree(root)
-    tree.write(fname) # make fname but it's line is 1
+    tree.write(fname)
     x = xml.dom.minidom.parse(fname)
     with open(fname, 'w') as f:
         f.write(x.toprettyxml(indent = ' '))
@@ -72,24 +77,26 @@ def create_dataset(in_dataset_dir, out_dataset_dir, resize, framework, dataset_a
     
     if not os.path.exists(out_dataset_dir):
         os.makedirs(out_dataset_dir)
-   
+    
     foldernames = list_get_foldernames(in_dataset_dir)
     label=0
     img_mean = np.zeros((resize,resize,3)) 
 
     with open(out_dataset_dir+'/train_map.txt','w') as map:
         with open(out_dataset_dir+'/labels.txt','w') as labels:
+            # start thread(print_dataset_log)
             dataset_args.check = True
+
+            # make dataset folder by folder
             for foldername in foldernames: 
                 labels.write(foldername+'\n')
-                abs_in_foldername = os.path.join(in_dataset_dir,foldername)
-                abs_out_foldername = os.path.join(out_dataset_dir,'train_db')
+                abs_in_foldername = os.path.join(in_dataset_dir,foldername) 
+                abs_out_foldername = os.path.join(out_dataset_dir,'train_db') 
                 if not os.path.exists(abs_out_foldername):
-                        os.makedirs(abs_out_foldername)
+                    os.makedirs(abs_out_foldername)
                 imgnames = list_get_imgnames(abs_in_foldername)
                 
                 for in_imgname in imgnames: 
-                    pixindex=0
                     abs_in_imgname = os.path.join(abs_in_foldername,in_imgname) 
                     extension = ['.jpg','.png','.jpeg','.bmp']
                     if os.path.splitext(abs_in_imgname)[1] in extension:
@@ -98,6 +105,7 @@ def create_dataset(in_dataset_dir, out_dataset_dir, resize, framework, dataset_a
                         resize_to_PNGimg(abs_in_imgname,abs_out_imgname,resize)
 
                         img = Image.open(abs_out_imgname)
+                        # check RGB image
                         if img.mode == 'RGB':
                             arr = np.array(img,dtype=np.float32)
                             img_mean += arr/dataset_args.total_img_num
@@ -113,9 +121,11 @@ def create_dataset(in_dataset_dir, out_dataset_dir, resize, framework, dataset_a
     return True
 
 def print_dataset_log(in_dataset_dir, out_dataset_dir, resize, framework, dataset_args):
+    # wait until train_map.txt & labels.txt made
     while not dataset_args.check:
         pass
 
+    # set logger
     logger = logging.getLogger('Dataset')
     logger.setLevel(logging.DEBUG)
     filehandler = logging.FileHandler(os.path.join(w_out_dataset_dir,'create_val_db.log'),'w')
@@ -126,6 +136,7 @@ def print_dataset_log(in_dataset_dir, out_dataset_dir, resize, framework, datase
     logger.addHandler(filehandler)
     logger.addHandler(streamhandler)
     
+    # print_log
     while dataset_args.check == True:
         message = 'Total={0}, Current={1}, Progress={2:0.4f}'.format(dataset_args.total_img_num,dataset_args.current_img_num,(dataset_args.current_img_num*100/dataset_args.total_img_num))
         logger.info(message)
@@ -157,13 +168,14 @@ def Dataset_result(out_dataset_dir):
     
 def Dataset_create(in_dataset_dir, out_dataset_dir, resize, framework):
     if framework == 3: # CNTK
+        # set default dataset_args
         dataset_args = parse_args()
         dataset_args.root = in_dataset_dir
         dataset_args.out = out_dataset_dir
         dataset_args.resize = resize
     
+        # count total_img_num
         foldernames = list_get_foldernames(in_dataset_dir)
-
         for foldername in foldernames:
             abs_in_foldername = os.path.join(in_dataset_dir,foldername)
             imgnames = list_get_imgnames(abs_in_foldername)
@@ -173,6 +185,7 @@ def Dataset_create(in_dataset_dir, out_dataset_dir, resize, framework):
                 if os.path.splitext(imgname)[1] in extension:
                     dataset_args.total_img_num += 1
 
+        # run threads
         functions = [create_dataset,print_dataset_log]
         threads = []
         for function in functions:
@@ -183,6 +196,7 @@ def Dataset_create(in_dataset_dir, out_dataset_dir, resize, framework):
         for thread in threads:
             thread.join()
         print('all ths finished')
+
     return True
 
 w_my_dataset_dir = r'D:\Github\cntk_dataset\img'

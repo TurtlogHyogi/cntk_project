@@ -16,11 +16,10 @@ def parse_args():
     parser.add_argument('--out', default='/', help='path to folder output dataset.')
 
     tgroup = parser.add_argument_group('Options for Train')
-    tgroup.add_argument('--resize', type=int, default=50,
-                        help='resize the shorter edge of image to the newsize, original images will be packed by default.')
-    tgroup.add_argument('--channels', type=int, default=3)
-    tgroup.add_argument('--epoch-size', type=int, default=0)
-    tgroup.add_argument('--out-dim', type=int, default=0)
+    tgroup.add_argument('--resize', type=int, default=50, help='resize the shorter edge of image to the newsize, original images will be packed by default.')
+    tgroup.add_argument('--channels', type=int, default=3 ,help='read Dataset channels')
+    tgroup.add_argument('--epoch-size', type=int, default=0, help='number of images at one epoch')
+    tgroup.add_argument('--out-dim', type=int, default=0, help='number of output classes')
     args = parser.parse_args()
 
     return args
@@ -76,25 +75,25 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
 
     if not os.path.exists(out_model_dir):
         os.makedirs(out_model_dir)
-    
-    logger = logging.getLogger('Train')
-    logger.setLevel(logging.DEBUG)
-    filehandler = logging.FileHandler(os.path.join(w_out_dataset_dir,'create_train_db.log'),'w')
-    streamhandler = logging.StreamHandler()
-    formatter = logging.Formatter('[%(levelname)s:%(asctime)s], %(message)s')
-    filehandler.setFormatter(formatter)
-    streamhandler.setFormatter(formatter)
-    logger.addHandler(filehandler)
-    logger.addHandler(streamhandler)
-
-    train_args = parse_args()
-    train_args.resize = read_size([xml_file for xml_file in Dataset.Dataset_result(w_out_dataset_dir) if 'mean.xml' in xml_file][0])
-    train_args.out_dim = read_num([map_file for map_file in Dataset.Dataset_result(w_out_dataset_dir) if 'labels.txt' in map_file][0])
-    train_args.epoch_size = read_num([label_file for label_file in Dataset.Dataset_result(w_out_dataset_dir) if 'map.txt' in label_file][0])
-
     cntk.device.set_default_device(cntk.device.gpu(cntk.device.best().type()))
 
     if framework == 3: # if cntk
+    
+        logger = logging.getLogger('Train')
+        logger.setLevel(logging.DEBUG)
+        filehandler = logging.FileHandler(os.path.join(w_out_dataset_dir,'create_train_db.log'),'w')
+        streamhandler = logging.StreamHandler()
+        formatter = logging.Formatter('[%(levelname)s:%(asctime)s], %(message)s')
+        filehandler.setFormatter(formatter)
+        streamhandler.setFormatter(formatter)
+        logger.addHandler(filehandler)
+        logger.addHandler(streamhandler)
+
+        train_args = parse_args()
+        train_args.resize = read_size([xml_file for xml_file in Dataset.Dataset_result(w_out_dataset_dir) if 'mean.xml' in xml_file][0])
+        train_args.out_dim = read_num([map_file for map_file in Dataset.Dataset_result(w_out_dataset_dir) if 'labels.txt' in map_file][0])
+        train_args.epoch_size = read_num([label_file for label_file in Dataset.Dataset_result(w_out_dataset_dir) if 'map.txt' in label_file][0])
+
         
         train_reader = create_reader(Dataset_result=Dataset.Dataset_result(dataset_dir),train_args=train_args,train=True)
     
@@ -140,7 +139,7 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
             
             z.save(os.path.join(out_model_dir, "ConvNet_{}.dnn".format(epoch)))
 
-        return print('Training finished')
+        return print('Train_create finish')
 
 def Train_result(model_dir):
     if not os.path.exists(model_dir):

@@ -66,29 +66,15 @@ def savemean(fname,data,dataset_args):
         f.write(x.toprettyxml(indent = ' '))
 
 def resizing(in_dataset_dir,out_dataset_dir,resize,dataset_args):
-    img_foldernames = []
-    
     foldernames = get_foldernames(in_dataset_dir)
     label=0
 
-    for foldername in foldernames:
-        file = 0
-        abs_in_foldername = os.path.join(in_dataset_dir,foldername)
-        imgnames = get_imgnames(abs_in_foldername)
-        
-        extension = ['.jpg','.png','.jpeg','.bmp']
-        for imgname in imgnames:
-            if os.path.splitext(imgname)[1] in extension:
-                file += 1
-        if file != 0:
-            img_foldernames.append(foldername)
-                    
     img_mean = np.zeros((resize,resize,3)) 
 
     with open(out_dataset_dir+'/train_map.txt','w') as map:
         with open(out_dataset_dir+'/labels.txt','w') as labels:
             dataset_args.check = True
-            for foldername in img_foldernames: 
+            for foldername in foldernames: 
                 labels.write(foldername+'\n')
                 abs_in_foldername = os.path.join(in_dataset_dir,foldername)
                 abs_out_foldername = os.path.join(out_dataset_dir,'train_db')
@@ -179,14 +165,10 @@ def Dataset_create(in_dataset_dir, out_dataset_dir, resize, framework):
         dataset_args.root = in_dataset_dir
         dataset_args.out = out_dataset_dir
         dataset_args.resize = resize
-
-        img_foldernames = []
     
         foldernames = get_foldernames(in_dataset_dir)
-        label=0
 
         for foldername in foldernames:
-            file = 0
             abs_in_foldername = os.path.join(in_dataset_dir,foldername)
             imgnames = get_imgnames(abs_in_foldername)
         
@@ -194,10 +176,6 @@ def Dataset_create(in_dataset_dir, out_dataset_dir, resize, framework):
             for imgname in imgnames:
                 if os.path.splitext(imgname)[1] in extension:
                     dataset_args.total_img_num += 1
-                    file += 1
-
-            if file != 0:
-                img_foldernames.append(foldername)
 
         functions = [create_dataset,print_dataset_log]
         threads = []

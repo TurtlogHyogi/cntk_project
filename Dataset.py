@@ -60,7 +60,9 @@ def savemean(fname,data,dataset_args):
     et.SubElement(meanImg,'cols').text = str(dataset_args.channel*dataset_args.resize*dataset_args.resize)
     et.SubElement(meanImg,'dt').text = 'f'
 
-    et.SubElement(meanImg,'data').text = ' '.join('%e' % data[i] for i in range(dataset_args.channel*dataset_args.resize*dataset_args.resize))
+    et.SubElement(meanImg,'data').text = ' '.join('%e' % data[i] for i in range(dataset_args.channel*
+                                                                                dataset_args.resize*
+                                                                                dataset_args.resize))
 
     tree = et.ElementTree(root)
     tree.write(fname)

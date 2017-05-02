@@ -25,7 +25,8 @@ def parse_args():
 
     return args
 
-# get foldernames -> return foldernames, type(foldernames)==list
+
+# get foldernames, in : abs_path-> return : foldernames, type(foldernames)==list
 def list_get_foldernames(in_dataset_dir):
     filenames = os.listdir(in_dataset_dir)    
     foldernames = []
@@ -35,16 +36,18 @@ def list_get_foldernames(in_dataset_dir):
             foldernames.append(filename)
 
     return foldernames
-
-# get imgnames -> return imgnames, type(imgnames)==list
+    #return list(folder for folder in os.listdir(in_dataset_dir) if os.path.isdir(os.path.join(in_dataset_dir,folder)))
+    
+# get imgnames, in : abs_path -> return imgnames, type(imgnames)==list
 def list_get_imgnames(foldername):
     imgnames = []
     imgnames = os.listdir(foldername)    
 
-    return imgnames
+    return imgnames    
+    #return list(imgname for imgname in os.listdir(foldername) if os.path.splitext(os.path.join(in_dataset_dir,imgnames))[1] in ['.jpg','.png','.jpeg','.bmp'])
 
 # save  : raw_img -> resized_img(.png)
-def resize_to_PNGimg(in_filename,out_filename,resize):
+def save_resized_PNG_img(in_filename,out_filename,resize):
     raw_img = Image.open(in_filename)
     resized_img = raw_img.resize((resize,resize))
     resized_img.save(out_filename)               
@@ -101,7 +104,7 @@ def create_dataset(in_dataset_dir, out_dataset_dir, resize, framework, dataset_a
                     if os.path.splitext(abs_in_imgname)[1] in extension: # check extension(is it img_file?)
                         out_imgname = '{:0{}d}.png'.format(dataset_args.current_img_num,int(log10(dataset_args.total_img_num)+1)) # set out_image_name
                         abs_out_imgname = os.path.join(abs_out_foldername,out_imgname)
-                        resize_to_PNGimg(abs_in_imgname,abs_out_imgname,resize) # save resized_png_img
+                        save_resized_PNG_img(abs_in_imgname,abs_out_imgname,resize) # save resized_png_img
 
                         img = Image.open(abs_out_imgname)
                         # check RGB image

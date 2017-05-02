@@ -75,6 +75,7 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
 
     if not os.path.exists(out_model_dir):
         os.makedirs(out_model_dir)
+
     cntk.device.set_default_device(cntk.device.gpu(cntk.device.best().type()))
 
     if framework == 3: # if cntk
@@ -145,7 +146,10 @@ def Train_result(model_dir):
     if not os.path.exists(model_dir):
         return print('model_dir is not found.')
 
-    return os.listdir(model_dir)
+    result = os.listdir(model_dir)
+    result.sort()
+
+    return result
 
 w_my_dataset_dir = Dataset.w_my_dataset_dir
 l_my_dataset_dir = Dataset.l_my_dataset_dir

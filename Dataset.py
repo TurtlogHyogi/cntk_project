@@ -62,8 +62,17 @@ def savemean(fname,data,dataset_args):
     x = xml.dom.minidom.parse(fname)
     with open(fname, 'w') as f:
         f.write(x.toprettyxml(indent = ' '))
-
-def resizing(in_dataset_dir,out_dataset_dir,resize,dataset_args):
+ 
+def create_dataset(in_dataset_dir, out_dataset_dir, resize, framework, dataset_args):
+    if not os.path.exists(in_dataset_dir):
+        return print('Dataset directory is Wrong.')
+    
+    if not os.listdir(in_dataset_dir):
+        return print('Dataset is not found.')
+    
+    if not os.path.exists(out_dataset_dir):
+        os.makedirs(out_dataset_dir)
+   
     foldernames = list_get_foldernames(in_dataset_dir)
     label=0
     img_mean = np.zeros((resize,resize,3)) 
@@ -101,16 +110,6 @@ def resizing(in_dataset_dir,out_dataset_dir,resize,dataset_args):
     savemean(out_dataset_dir + './train_mean.xml',img_mean, dataset_args)
     dataset_args.check = False # stop print_log thread
     
-def create_dataset(in_dataset_dir, out_dataset_dir, resize, framework, dataset_args):
-    if not os.path.exists(in_dataset_dir):
-        return print('Dataset directory is Wrong.')
-    
-    if not os.listdir(in_dataset_dir):
-        return print('Dataset is not found.')
-    
-    if not os.path.exists(out_dataset_dir):
-        os.makedirs(out_dataset_dir)
-    resizing(in_dataset_dir,out_dataset_dir,resize,dataset_args)
     return True
 
 def print_dataset_log(in_dataset_dir, out_dataset_dir, resize, framework, dataset_args):
@@ -119,7 +118,7 @@ def print_dataset_log(in_dataset_dir, out_dataset_dir, resize, framework, datase
 
     logger = logging.getLogger('Dataset')
     logger.setLevel(logging.DEBUG)
-    filehandler = logging.FileHandler(os.path.join(w_out_dataset_dir,'creat_val_db.log'),'w')
+    filehandler = logging.FileHandler(os.path.join(w_out_dataset_dir,'create_val_db.log'),'w')
     streamhandler = logging.StreamHandler()
     formatter = logging.Formatter('[%(levelname)s:%(asctime)s], %(message)s')
     filehandler.setFormatter(formatter)

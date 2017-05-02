@@ -89,26 +89,26 @@ def create_dataset(in_dataset_dir, out_dataset_dir, resize, framework, dataset_a
 
             # make dataset folder by folder
             for foldername in foldernames: 
-                labels.write(foldername+'\n')
-                abs_in_foldername = os.path.join(in_dataset_dir,foldername) 
+                labels.write(foldername+'\n') # write label(foldername)
+                abs_in_foldername = os.path.join(in_dataset_dir,foldername)
                 abs_out_foldername = os.path.join(out_dataset_dir,'train_db') 
                 if not os.path.exists(abs_out_foldername):
                     os.makedirs(abs_out_foldername)
-                imgnames = list_get_imgnames(abs_in_foldername)
+                imgnames = list_get_imgnames(abs_in_foldername) # get imgnames in foldername
                 
                 for in_imgname in imgnames: 
                     abs_in_imgname = os.path.join(abs_in_foldername,in_imgname) 
                     extension = ['.jpg','.png','.jpeg','.bmp']
-                    if os.path.splitext(abs_in_imgname)[1] in extension:
-                        out_imgname = '{:0{}d}.png'.format(dataset_args.current_img_num,int(log10(dataset_args.total_img_num)+1))    
+                    if os.path.splitext(abs_in_imgname)[1] in extension: # check extension(is it img_file?)
+                        out_imgname = '{:0{}d}.png'.format(dataset_args.current_img_num,int(log10(dataset_args.total_img_num)+1)) # set out_image_name
                         abs_out_imgname = os.path.join(abs_out_foldername,out_imgname)
-                        resize_to_PNGimg(abs_in_imgname,abs_out_imgname,resize)
+                        resize_to_PNGimg(abs_in_imgname,abs_out_imgname,resize) # save resized_png_img
 
                         img = Image.open(abs_out_imgname)
                         # check RGB image
                         if img.mode == 'RGB':
                             arr = np.array(img,dtype=np.float32)
-                            img_mean += arr/dataset_args.total_img_num
+                            img_mean += arr/dataset_args.total_img_num # sum rgb_img_m
                             dataset_args.current_img_num += 1
                             map.write(abs_out_imgname+'\t'+str(label)+'\n')
                 label+=1

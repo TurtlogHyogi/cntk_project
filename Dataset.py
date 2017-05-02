@@ -20,7 +20,7 @@ def parse_args():
     dgroup.add_argument('--channel', type=int, default=3, help='channels of image. RGB -> 3, Gray -> 1')
     dgroup.add_argument('--total-img-num', type=int, default=0, help='logging data, total number of dataset')
     dgroup.add_argument('--current-img-num', type=int, default=0, help='logging data, number of dataset made')
-    dgroup.add_argument('--check', type=bool, default=False, help='if check=True -> running print_log thread, else -> stop print_log thread')
+    dgroup.add_argument('--log_start', type=bool, default=False, help='if log_start=True -> running print_log thread, else -> stop print_log thread')
     args = parser.parse_args()
 
     return args
@@ -43,7 +43,7 @@ def list_get_imgnames(foldername):
 
     return imgnames
 
-# save : raw_img -> resized_img(.png)
+# save  : raw_img -> resized_img(.png)
 def resize_to_PNGimg(in_filename,out_filename,resize):
     raw_img = Image.open(in_filename)
     resized_img = raw_img.resize((resize,resize))
@@ -69,23 +69,20 @@ def savemean(fname,data,dataset_args):
         f.write(x.toprettyxml(indent = ' '))
  
 def create_dataset(in_dataset_dir, out_dataset_dir, resize, framework, dataset_args):
-    if not os.path.exists(in_dataset_dir):
-        return print('Dataset directory is Wrong.')
-    
-    if not os.listdir(in_dataset_dir):
-        return print('Dataset is not found.')
+    if not (os.path.exists(in_dataset_dir) and os.listdir(in_dataset_dir)): # check input_dataset
+            return print('Dataset is Wrong.')
     
     if not os.path.exists(out_dataset_dir):
         os.makedirs(out_dataset_dir)
     
-    foldernames = list_get_foldernames(in_dataset_dir)
-    label=0
-    img_mean = np.zeros((resize,resize,3)) 
-
     with open(out_dataset_dir+'/train_map.txt','w') as map:
         with open(out_dataset_dir+'/labels.txt','w') as labels:
             # start thread(print_dataset_log)
-            dataset_args.check = True
+            dataset_args.log_start = True
+
+            foldernames = list_get_foldernames(in_dataset_dir)
+            label=0
+            img_mean = np.zeros((resize,resize,3)) 
 
             # make dataset folder by folder
             for foldername in foldernames: 
@@ -116,13 +113,13 @@ def create_dataset(in_dataset_dir, out_dataset_dir, resize, framework, dataset_a
     img_mean = np.ascontiguousarray(np.transpose(img_mean,(2,0,1)))
     img_mean = img_mean.reshape(3*resize*resize)
     savemean(out_dataset_dir + './train_mean.xml',img_mean, dataset_args)
-    dataset_args.check = False # stop print_log thread
+    dataset_args.log_start = False # stop print_log thread
     
     return True
 
 def print_dataset_log(in_dataset_dir, out_dataset_dir, resize, framework, dataset_args):
     # wait until train_map.txt & labels.txt made
-    while not dataset_args.check:
+    while not dataset_args.log_start:
         pass
 
     # set logger
@@ -137,12 +134,16 @@ def print_dataset_log(in_dataset_dir, out_dataset_dir, resize, framework, datase
     logger.addHandler(streamhandler)
     
     # print_log
-    while dataset_args.check == True:
-        message = 'Total={0}, Current={1}, Progress={2:0.4f}'.format(dataset_args.total_img_num,dataset_args.current_img_num,(dataset_args.current_img_num*100/dataset_args.total_img_num))
+    while dataset_args.log_start == True:
+        message = 'Total={0}, Current={1}, Progress={2:0.4f}'.format(dataset_args.total_img_num,
+                                                                     dataset_args.current_img_num,
+                                                                     dataset_args.current_img_num*100/dataset_args.total_img_num)
         logger.info(message)
         time.sleep(1)
-    if dataset_args.check == False:
-        message = 'Total={0}, Current={1}, Progress={2:0.4f}'.format(dataset_args.total_img_num,dataset_args.current_img_num,(dataset_args.current_img_num*100/dataset_args.total_img_num))
+    if dataset_args.log_start == False:
+        message = 'Total={0}, Current={1}, Progress={2:0.4f}'.format(dataset_args.total_img_num,
+                                                                     dataset_args.current_img_num,
+                                                                     dataset_args.current_img_num*100/dataset_args.total_img_num)
         logger.info(message)
         
 
@@ -187,15 +188,15 @@ def Dataset_create(in_dataset_dir, out_dataset_dir, resize, framework):
 
         # run threads
         functions = [create_dataset,print_dataset_log]
+        func_args = (in_dataset_dir,out_dataset_dir,resize,framework,dataset_args)
         threads = []
         for function in functions:
-            func_args = (in_dataset_dir,out_dataset_dir,resize,framework,dataset_args)
             th = threading.Thread(target=function, args=func_args, name = function)
             th.start()
             threads.append(th)
         for thread in threads:
             thread.join()
-        print('all ths finished')
+        print('Dataset_create finish')
 
     return True
 

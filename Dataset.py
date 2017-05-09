@@ -117,7 +117,7 @@ def create_dataset(in_dataset_dir, out_dataset_dir, resize, framework, dataset_a
 
     img_mean = np.ascontiguousarray(np.transpose(img_mean,(2,0,1)))
     img_mean = img_mean.reshape(3*resize*resize)
-    savemean(out_dataset_dir + './train_mean.xml',img_mean, dataset_args)
+    savemean(out_dataset_dir + '/train_mean.xml',img_mean, dataset_args)
     dataset_args.log_start = False # stop print_log thread
     
     return True
@@ -130,7 +130,7 @@ def print_dataset_log(in_dataset_dir, out_dataset_dir, resize, framework, datase
     # set logger
     logger = logging.getLogger('Dataset')
     logger.setLevel(logging.DEBUG)
-    filehandler = logging.FileHandler(os.path.join(w_out_dataset_dir,'create_val_db.log'),'w')
+    filehandler = logging.FileHandler(os.path.join(out_dataset_dir,'create_val_db.log'),'w')
     streamhandler = logging.StreamHandler()
     formatter = logging.Formatter('[%(levelname)s:%(asctime)s], %(message)s')
     filehandler.setFormatter(formatter)
@@ -211,9 +211,9 @@ l_my_dataset_dir = r'/root/git/cntk_dataset/img'
 l_out_dataset_dir = r'/root/git/cntk_dataset/out_dataset'
 
 if __name__ == '__main__':
-    Dataset_create(in_dataset_dir = w_my_dataset_dir,
-                   out_dataset_dir = w_out_dataset_dir,
+    Dataset_create(in_dataset_dir = l_my_dataset_dir,
+                   out_dataset_dir = l_out_dataset_dir,
                    resize = 32,
                    framework = 3)
-    print(Dataset_result(w_out_dataset_dir))
+    print(Dataset_result(l_out_dataset_dir))
 

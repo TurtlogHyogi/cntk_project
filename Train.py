@@ -82,7 +82,7 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
     
         logger = logging.getLogger('Train')
         logger.setLevel(logging.DEBUG)
-        filehandler = logging.FileHandler(os.path.join(w_out_dataset_dir,'create_train_db.log'),'w')
+        filehandler = logging.FileHandler(os.path.join(out_model_dir,'create_train_db.log'),'w')
         streamhandler = logging.StreamHandler()
         formatter = logging.Formatter('[%(levelname)s:%(asctime)s], %(message)s')
         filehandler.setFormatter(formatter)
@@ -91,9 +91,9 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
         logger.addHandler(streamhandler)
 
         train_args = parse_args()
-        train_args.resize = read_size([xml_file for xml_file in Dataset.Dataset_result(w_out_dataset_dir) if 'mean.xml' in xml_file][0])
-        train_args.out_dim = read_num([map_file for map_file in Dataset.Dataset_result(w_out_dataset_dir) if 'labels.txt' in map_file][0])
-        train_args.epoch_size = read_num([label_file for label_file in Dataset.Dataset_result(w_out_dataset_dir) if 'map.txt' in label_file][0])
+        train_args.resize = read_size([xml_file for xml_file in Dataset.Dataset_result(dataset_dir) if 'mean.xml' in xml_file][0])
+        train_args.out_dim = read_num([map_file for map_file in Dataset.Dataset_result(dataset_dir) if 'labels.txt' in map_file][0])
+        train_args.epoch_size = read_num([label_file for label_file in Dataset.Dataset_result(dataset_dir) if 'map.txt' in label_file][0])
 
         
         train_reader = create_reader(Dataset_result=Dataset.Dataset_result(dataset_dir),train_args=train_args,train=True)
@@ -159,12 +159,12 @@ w_out_model_dir = Dataset.w_out_dataset_dir + '/model'
 l_out_model_dir = Dataset.l_out_dataset_dir + '/model'
 
 if __name__ == '__main__':
-    print('epoch_size={},out_dim={}'.format(read_num(Dataset.Dataset_result(w_out_dataset_dir)[1]),read_num(Dataset.Dataset_result(w_out_dataset_dir)[0])))
-    Train_create(dataset_dir = w_out_dataset_dir,
+    print('epoch_size={},out_dim={}'.format(read_num(Dataset.Dataset_result(l_out_dataset_dir)[1]),read_num(Dataset.Dataset_result(l_out_dataset_dir)[0])))
+    Train_create(dataset_dir = l_out_dataset_dir,
                  framework = 3, 
-                 out_model_dir = w_out_model_dir, 
+                 out_model_dir = l_out_model_dir, 
                  max_epochs = 3, 
                  mb_size = 50, 
                  network_name = 'convnet')
-    print(Train_result(w_out_model_dir))
+    print(Train_result(l_out_model_dir))
 

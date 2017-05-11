@@ -9,18 +9,34 @@ import xml.dom.minidom
 import threading,time
 import logging
 
-# set default dataset_args
+# set default dataset_args -> Dataset make options
+#
+# root : input Dataset path
+#
+# out : output Dataset path
+#
+# channel : img encoding
+#
+# to
 def parse_args():
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, description='Create dataset(resized_img,mean_xml,map.txt,label,txt)')
-    parser.add_argument('--root', default='/', help='path to folder containing images.')
-    parser.add_argument('--out', default='/', help='path to folder output dataset.')
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, 
+                                     description='Create dataset(resized_img,mean_xml,map.txt,label,txt)')
+    parser.add_argument('--root', default='/', 
+                        help='path of input dataset.')
+    parser.add_argument('--out', default='/', 
+                        help='path of output dataset.')
 
     dgroup = parser.add_argument_group('Options for creating Dataset')
-    dgroup.add_argument('--resize', type=int, default=50, help='resize the shorter edge of image to the newsize, original images will be packed by default.')
-    dgroup.add_argument('--channel', type=int, default=3, help='channels of image. RGB -> 3, Gray -> 1')
-    dgroup.add_argument('--total-img-num', type=int, default=0, help='logging data, total number of dataset')
-    dgroup.add_argument('--current-img-num', type=int, default=0, help='logging data, number of dataset made')
-    dgroup.add_argument('--log_start', type=bool, default=False, help='if log_start=True -> running print_log thread, else -> stop print_log thread')
+    dgroup.add_argument('--resize', type=int, default=50, 
+                        help='resize raw_img to resized_img(resize by resize)')
+    dgroup.add_argument('--channel', type=int, default=3, 
+                        help='channels of image. RGB -> 3, Gray -> 1')
+    dgroup.add_argument('--total-img-num', type=int, default=0, 
+                        help='logging data, total number of dataset')
+    dgroup.add_argument('--current-img-num', type=int, default=0,
+                        help='logging data, number of dataset made')
+    dgroup.add_argument('--log-start', type=bool, default=False, 
+                        help='if --log-start=True -> running print_log thread, else -> stop print_log thread')
     args = parser.parse_args()
 
     return args
@@ -53,6 +69,8 @@ def save_resized_PNG_img(in_filename,out_filename,resize):
     resized_img.save(out_filename)               
 
 # save : RGB mean.xml
+# fname : file_name
+# data : RGB_mean_array_data
 def savemean(fname,data,dataset_args):
     root = et.Element('opencv_storage')
     et.SubElement(root,'Channel').text = str(dataset_args.channel)
@@ -73,9 +91,14 @@ def savemean(fname,data,dataset_args):
     with open(fname, 'w') as f:
         f.write(x.toprettyxml(indent = ' '))
  
+# write map_file & labels_file & mean_file
+# map_file : 'abs_path' + ''\t' + 'label'
+# labels_file : 'foldername'
+# mean_file : RGB_mean.xml
 def create_dataset(in_dataset_dir, out_dataset_dir, resize, framework, dataset_args):
+    dataset_args.log_start = True
     if not (os.path.exists(in_dataset_dir) and os.listdir(in_dataset_dir)): # check input_dataset
-            return print('Dataset is Wrong.')
+        return print('Dataset is Wrong.')
     
     if not os.path.exists(out_dataset_dir):
         os.makedirs(out_dataset_dir)
@@ -83,7 +106,6 @@ def create_dataset(in_dataset_dir, out_dataset_dir, resize, framework, dataset_a
     with open(out_dataset_dir+'/train_map.txt','w') as map:
         with open(out_dataset_dir+'/labels.txt','w') as labels:
             # start thread(print_dataset_log)
-            dataset_args.log_start = True
 
             foldernames = list_get_foldernames(in_dataset_dir)
             label=0
@@ -107,17 +129,17 @@ def create_dataset(in_dataset_dir, out_dataset_dir, resize, framework, dataset_a
                         save_resized_PNG_img(abs_in_imgname,abs_out_imgname,resize) # save resized_png_img
 
                         img = Image.open(abs_out_imgname)
-                        # check RGB image
+                        # check. is it RGB image?
                         if img.mode == 'RGB':
-                            arr = np.array(img,dtype=np.float32)
-                            img_mean += arr/dataset_args.total_img_num # sum rgb_img_m
-                            dataset_args.current_img_num += 1
                             map.write(abs_out_imgname+'\t'+str(label)+'\n')
+                            arr = np.array(img,dtype=np.float32)
+                            img_mean += arr/dataset_args.total_img_num # calculate RGB_img_mean
+                            dataset_args.current_img_num += 1
                 label+=1
 
     img_mean = np.ascontiguousarray(np.transpose(img_mean,(2,0,1)))
     img_mean = img_mean.reshape(3*resize*resize)
-    savemean(out_dataset_dir + '/train_mean.xml',img_mean, dataset_args)
+    savemean(out_dataset_dir + './train_mean.xml',img_mean, dataset_args)
     dataset_args.log_start = False # stop print_log thread
     
     return True
@@ -130,7 +152,7 @@ def print_dataset_log(in_dataset_dir, out_dataset_dir, resize, framework, datase
     # set logger
     logger = logging.getLogger('Dataset')
     logger.setLevel(logging.DEBUG)
-    filehandler = logging.FileHandler(os.path.join(out_dataset_dir,'create_val_db.log'),'w')
+    filehandler = logging.FileHandler(os.path.join(w_out_dataset_dir,'create_val_db.log'),'w')
     streamhandler = logging.StreamHandler()
     formatter = logging.Formatter('[%(levelname)s:%(asctime)s], %(message)s')
     filehandler.setFormatter(formatter)
@@ -211,9 +233,9 @@ l_my_dataset_dir = r'/root/git/cntk_dataset/img'
 l_out_dataset_dir = r'/root/git/cntk_dataset/out_dataset'
 
 if __name__ == '__main__':
-    Dataset_create(in_dataset_dir = l_my_dataset_dir,
-                   out_dataset_dir = l_out_dataset_dir,
+    Dataset_create(in_dataset_dir = w_my_dataset_dir,
+                   out_dataset_dir = w_out_dataset_dir,
                    resize = 32,
                    framework = 3)
-    print(Dataset_result(l_out_dataset_dir))
+    print(Dataset_result(w_out_dataset_dir))
 

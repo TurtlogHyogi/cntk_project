@@ -163,11 +163,11 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
             new_sample, new_loss, new_metric = progress_printer.samples_since_start, \
                                                progress_printer.loss_since_start, \
                                                progress_printer.metric_since_start
-            message = 'epoch={0}of{1}, time={2:.2f}(sec), speed={3:.2f}(samples/sec), loss = {4:.6f}, metric = {5:.6f}%'.format(1+epoch,max_epochs,
-                                                                                                              cur_time-pre_time,
-                                                                                                              (new_sample-sample)/(cur_time-pre_time),
-                                                                                                              (new_loss-loss)/(new_sample-sample),
-                                                                                                              100*(1-(new_metric-metric)/(new_sample-sample)))
+            message = 'epoch={0}of{1}, cost_time={2:.2f}(sec), speed={3:.2f}(samples/sec), loss={4:.6f}, accuracy={5:.6f}%'.format(1+epoch,max_epochs,
+                                                                                                                                   cur_time-pre_time,
+                                                                                                                                   (new_sample-sample)/(cur_time-pre_time),
+                                                                                                                                   (new_loss-loss)/(new_sample-sample),
+                                                                                                                                   100*(1-(new_metric-metric)/(new_sample-sample)))
                       
             logger.info(message)
             sample, loss, metric = new_sample, new_loss, new_metric

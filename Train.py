@@ -106,6 +106,7 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
     if not os.path.exists(out_model_dir):
         os.makedirs(out_model_dir)
 
+    cntk.device.set_default_device(cntk.device.gpu(cntk.device.best().id()))
 #    cntk.device.set_default_device(cntk.device.gpu(cntk.device.best().type()))
 
     if framework == 3: # if cntk

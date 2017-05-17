@@ -40,6 +40,8 @@ def parse_args():
                         help='number of images at one epoch')
     tgroup.add_argument('--out-dim', type=int, default=0,
                         help='number of output classes')
+    tgroup.add_argument('--device', type=dict, help='when training, select device type & number')
+
     args = parser.parse_args()
 
     return args
@@ -134,16 +136,21 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
             scaled_input = cntk.ops.element_times(input,(1/256))
             label = cntk.blocks.input_variable(train_args.out_dim)
         
-            z = import_module('network.'+network_name).get_network(train_args)(scaled_input)
-            ce = cntk.ops.cross_entropy_with_softmax(z,label)
-            pe = cntk.ops.classification_error(z,label)
+            network = import_module('network.'+network_name).get_network(train_args)(scaled_input)
+            loss = cntk.ops.cross_entropy_with_softmax(network,label)
+            error_rate = cntk.ops.classification_error(network,label)
             lr_per_sample = [0.0015625]*20+[0.00046875]*20+[0.00015625]*20+[0.000046875]*10+[0.000015625]
             lr_schedule = cntk.learning_rate_schedule(lr_per_sample, unit=cntk.learner.UnitType.sample, epoch_size=train_args.epoch_size)
             mm_time_constant = [0]*20+[600]*20+[1200]
             mm_schedule = cntk.learner.momentum_as_time_constant_schedule(mm_time_constant,epoch_size=train_args.epoch_size)
-            learner = cntk.learner.momentum_sgd(z.parameters, lr=lr_schedule, momentum=mm_schedule, l2_regularization_weight=0.002)
-            trainer = cntk.Trainer(z,(ce,pe),learner)
-        
+            #learner = cntk.learner.momentum_sgd(network.parameters, lr=lr_schedule, momentum=mm_schedule, l2_regularization_weight=0.002)
+            #trainer = cntk.Trainer(network,(loss,error_rate),learner)
+            
+            # multi-gpu
+            local_learner = cntk.learner.momentum_sgd(network.parameters, lr=lr_schedule, momentum=mm_schedule, l2_regularization_weight=0.002)
+            distributed_learner = cntk.distributed.block_momentum_distributed_learner(local_learner,block_size=200)
+            trainer = cntk.Trainer(network,(loss,error_rate),distributed_learner)
+            
         input_map = {
             input : train_reader.streams.features,
             label : train_reader.streams.labels
@@ -172,8 +179,9 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
                       
             logger.info(message)
             sample, loss, metric = new_sample, new_loss, new_metric
-            z.save(os.path.join(out_model_dir, "{}_{}.dnn".format(network_name,epoch)))
+            network.save(os.path.join(out_model_dir, "{}_{}.dnn".format(network_name,epoch)))
             
+    cntk.distributed.Communicator.finalize()
 
     return print('Train_create finish')
 

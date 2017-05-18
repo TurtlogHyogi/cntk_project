@@ -162,13 +162,13 @@ def print_dataset_log(in_dataset_dir, out_dataset_dir, resize, framework, datase
     
     # print_log
     while dataset_args.log_start == True:
-        message = 'Total={0}, Current={1}, Progress={2:0.4f}'.format(dataset_args.total_img_num,
+        message = 'Total={0}, Current={1}, Progress={2:0.4f}%'.format(dataset_args.total_img_num,
                                                                      dataset_args.current_img_num,
                                                                      dataset_args.current_img_num*100/dataset_args.total_img_num)
         logger.info(message)
         time.sleep(1)
     if dataset_args.log_start == False:
-        message = 'Total={0}, Current={1}, Progress={2:0.4f}'.format(dataset_args.total_img_num,
+        message = 'Total={0}, Current={1}, Progress={2:0.4f}%'.format(dataset_args.total_img_num,
                                                                      dataset_args.current_img_num,
                                                                      dataset_args.current_img_num*100/dataset_args.total_img_num)
         logger.info(message)

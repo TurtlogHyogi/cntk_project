@@ -96,13 +96,13 @@ def savemean(fname,data,dataset_args):
 # labels_file : 'foldername'
 # mean_file : RGB_mean.xml
 def create_dataset(in_dataset_dir, out_dataset_dir, resize, framework, dataset_args):
-    dataset_args.log_start = True
     if not (os.path.exists(in_dataset_dir) and os.listdir(in_dataset_dir)): # check input_dataset
         return print('Dataset is Wrong.')
     
     if not os.path.exists(out_dataset_dir):
         os.makedirs(out_dataset_dir)
     
+    dataset_args.log_start = True
     with open(out_dataset_dir+'/train_map.txt','w') as map:
         with open(out_dataset_dir+'/labels.txt','w') as labels:
             # start thread(print_dataset_log)
@@ -139,7 +139,7 @@ def create_dataset(in_dataset_dir, out_dataset_dir, resize, framework, dataset_a
 
     img_mean = np.ascontiguousarray(np.transpose(img_mean,(2,0,1)))
     img_mean = img_mean.reshape(3*resize*resize)
-    savemean(out_dataset_dir + './train_mean.xml',img_mean, dataset_args)
+    savemean(out_dataset_dir + '/train_mean.xml',img_mean, dataset_args)
     dataset_args.log_start = False # stop print_log thread
     
     return True
@@ -152,7 +152,7 @@ def print_dataset_log(in_dataset_dir, out_dataset_dir, resize, framework, datase
     # set logger
     logger = logging.getLogger('Dataset')
     logger.setLevel(logging.DEBUG)
-    filehandler = logging.FileHandler(os.path.join(w_out_dataset_dir,'create_val_db.log'),'w')
+    filehandler = logging.FileHandler(os.path.join(out_dataset_dir,'create_val_db.log'),'w')
     streamhandler = logging.StreamHandler()
     formatter = logging.Formatter('[%(levelname)s:%(asctime)s], %(message)s')
     filehandler.setFormatter(formatter)

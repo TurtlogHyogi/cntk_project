@@ -115,7 +115,7 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
     
         logger = logging.getLogger('Train')
         logger.setLevel(logging.DEBUG)
-        filehandler = logging.FileHandler(os.path.join(w_out_dataset_dir,'create_train_db.log'),'w')
+        filehandler = logging.FileHandler(os.path.join(dataset_dir,'create_train_db.log'),'w')
         streamhandler = logging.StreamHandler()
         formatter = logging.Formatter('[%(levelname)s:%(asctime)s], %(message)s')
         filehandler.setFormatter(formatter)
@@ -126,9 +126,9 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
         if network_name == 'convnet':
 
             train_args = parse_args()
-            train_args.resize = read_size([mean_file for mean_file in Dataset.Dataset_result(w_out_dataset_dir) if 'mean.xml' in mean_file][0])
-            train_args.out_dim = read_line_num([label_file for label_file in Dataset.Dataset_result(w_out_dataset_dir) if 'labels.txt' in label_file][0])
-            train_args.epoch_size = read_line_num([map_file for map_file in Dataset.Dataset_result(w_out_dataset_dir) if 'map.txt' in map_file][0])
+            train_args.resize = read_size([mean_file for mean_file in Dataset.Dataset_result(dataset_dir) if 'mean.xml' in mean_file][0])
+            train_args.out_dim = read_line_num([label_file for label_file in Dataset.Dataset_result(dataset_dir) if 'labels.txt' in label_file][0])
+            train_args.epoch_size = read_line_num([map_file for map_file in Dataset.Dataset_result(dataset_dir) if 'map.txt' in map_file][0])
         
             train_reader = create_img_reader(Dataset_result=Dataset.Dataset_result(dataset_dir),train_args=train_args,train=True)
     

@@ -143,20 +143,23 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
             lr_schedule = cntk.learning_rate_schedule(lr_per_sample, unit=cntk.learner.UnitType.sample, epoch_size=train_args.epoch_size)
             mm_time_constant = [0]*20+[600]*20+[1200]
             mm_schedule = cntk.learner.momentum_as_time_constant_schedule(mm_time_constant,epoch_size=train_args.epoch_size)
+
+            # Single-GPU
             #learner = cntk.learner.momentum_sgd(network.parameters, lr=lr_schedule, momentum=mm_schedule, l2_regularization_weight=0.002)
             #trainer = cntk.Trainer(network,(loss,error_rate),learner)
-            
-            # multi-gpu
+           
+
+            # Multi-GPU
             local_learner = cntk.learner.momentum_sgd(network.parameters, lr=lr_schedule, momentum=mm_schedule, l2_regularization_weight=0.002)
 
             # block_momentum
             #distributed_learner = cntk.distributed.block_momentum_distributed_learner(local_learner,block_size=200)
             #trainer = cntk.Trainer(network,(loss,error_rate),distributed_learner)
             
-            # 1-bit-sgd
-            distributed_learner = cntk.distributed.data_parallel_distributed_learner(learner = local_learner,
-                                                                                     distributed_after = 0,
-                                                                                     num_quantization_bits = 32)
+            # data_parallel
+            distributed_learner = cntk.distributed.data_parallel_distributed_learner(learner = local_learner,       # learner ex)SGD,...
+                                                                                     distributed_after = 0,         # first, 'distribued_after' samples trained withdout data_parallel. second, other samples trained with data_parallel
+                                                                                     num_quantization_bits = 32)    # quantization bits -> num_quan going down then speed up
             trainer = cntk.Trainer(network,(loss,error_rate),distributed_learner)
             
         input_map = {

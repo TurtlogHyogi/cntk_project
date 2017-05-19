@@ -9,18 +9,16 @@ import xml.dom.minidom
 import threading,time
 import logging
 
-# set default dataset_args -> Dataset make options
+# set default dataset_args -> options for making Dataset
+# options : path,encoding,log
+# return : default dataset_args
 #
-# root : input Dataset path
-#
-# out : output Dataset path
-#
-# channel : img encoding
-#
-# to
+# ex)   test = parse_args()
+#       then test.root='/', test.out='/', test.log_start=False
+#       then if you want change log_start, test.logstart=True
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, 
-                                     description='Create dataset(resized_img,mean_xml,map.txt,label,txt)')
+                                     description='Create dataset(resized_img.png, mean_fil.xml, map.txt, label.txt')
     parser.add_argument('--root', default='/', 
                         help='path of input dataset.')
     parser.add_argument('--out', default='/', 
@@ -42,7 +40,19 @@ def parse_args():
     return args
 
 
-# get foldernames, in : abs_path-> return : foldernames, type(foldernames)==list
+# get foldernames
+# in : abs_path-> return : foldernames, type(foldernames)==list
+#
+# ex)   /root/test_path/folder1/image0.bmp
+#       /root/test_path/folder2/image1.png
+#       /root/test_path/folder2/image2.bmp
+#       /root/test_path/folder2/image3.jpeg
+#       /root/test_path/folder3/image4.jpg
+#       /root/test_path/folder3/image5.bmp
+#       /root/test_path/folder3/image6.png
+#
+#       foldernames = list_get_foldernames('/root/test_path')
+#       foldernames == [folder1,folder2,folder3]
 def list_get_foldernames(in_dataset_dir):
     filenames = os.listdir(in_dataset_dir)    
     foldernames = []
@@ -54,7 +64,20 @@ def list_get_foldernames(in_dataset_dir):
     return foldernames
     #return list(folder for folder in os.listdir(in_dataset_dir) if os.path.isdir(os.path.join(in_dataset_dir,folder)))
     
-# get imgnames, in : abs_path -> return imgnames, type(imgnames)==list
+# get imgnames
+# in : abs_path -> return imgnames, type(imgnames)==list
+#
+# ex)   /root/test_path/folder1/image0.bmp
+#       /root/test_path/folder2/image1.png
+#       /root/test_path/folder2/image2.bmp
+#       /root/test_path/folder2/image3.jpeg
+#       /root/test_path/folder3/image4.jpg
+#       /root/test_path/folder3/image5.bmp
+#       /root/test_path/folder3/image6.png
+#
+#       imgnames = list_get_imgnames('/root/test_path/folder1') -> imgnames == [image0.bmp]
+#       imgnames = list_get_imgnames('/root/test_path/folder2') -> imgnames == [image1.png, image2.bmp, image3.jpeg]
+#       imgnames = list_get_imgnames('/root/test_path/folder3') -> imgnames == [image4.jpg, image5.bmp, image6.png]
 def list_get_imgnames(foldername):
     imgnames = []
     imgnames = os.listdir(foldername)    
@@ -63,14 +86,32 @@ def list_get_imgnames(foldername):
     #return list(imgname for imgname in os.listdir(foldername) if os.path.splitext(os.path.join(in_dataset_dir,imgnames))[1] in ['.jpg','.png','.jpeg','.bmp'])
 
 # save  : raw_img -> resized_img(.png)
+# in_filename : abs_path, out_filename : abs_path, resize : integer
+# 
+# ex)   /root/test_path/folder1/image0.bmp
+#
+#       save_resized_PNG_img('/root/test_path/folder1/image0.bmp','/out/test.png',100)
+#       
+#       /root/test_path/folder1/image0.bmp
+#       /out/test.png
 def save_resized_PNG_img(in_filename,out_filename,resize):
     raw_img = Image.open(in_filename)
     resized_img = raw_img.resize((resize,resize))
     resized_img.save(out_filename)               
 
-# save : RGB mean.xml
-# fname : file_name
-# data : RGB_mean_array_data
+# savemean(fname,data,dataset_args) -> make file : fname
+# fname : file_name. ex) test.xml
+# data : R_mean_array_data + G_mean_array + B_mean_array.
+#        data looks like MeanImg
+#
+# ex) 3*2*2 image -> R_mean = [123.123123, 156.231523, 126.215664, 152.126667]
+#                    G_mean = [111.125125, 185.235121, 192.123151, 132.115251]
+#                    B_mean = [92.412415, 125.124125, 125.135234, 199.123125]
+#                 -> data = [123.123123, 156.231523, 126.215664, 152.126667] + [111.125125, 185.235121, 192.123151, 132.115251] + [92.412415, 125.124125, 125.135234, 199.123125]
+#                                                R_mean                                             G_mean                                            B_mean
+#                         = [123.123123, 156.231423, 126.215664, 152.126667, 111.125125, 185.235121, 192.123151, 132.115251, 92.412415, 125.124125, 125.135234, 199.123125]
+#
+# then, write file. format of the file is xml.
 def savemean(fname,data,dataset_args):
     root = et.Element('opencv_storage')
     et.SubElement(root,'Channel').text = str(dataset_args.channel)
@@ -91,10 +132,19 @@ def savemean(fname,data,dataset_args):
     with open(fname, 'w') as f:
         f.write(x.toprettyxml(indent = ' '))
  
-# write map_file & labels_file & mean_file
-# map_file : 'abs_path' + ''\t' + 'label'
-# labels_file : 'foldername'
-# mean_file : RGB_mean.xml
+# save resized_img & write map_file, labels_file, mean_file
+# map_file
+#   title : 'train_map.txt' 
+#   format : 'fname_abs_path' + ''\t' + 'label
+#             fname_abs_path' + ''\t' + 'label
+#             ...'
+# labels_file
+#   title : 'label.txt'
+#   format : 'foldername1
+#             foldername2
+#             ...'
+# mean_file
+#   title : RGB_mean.xml
 def create_dataset(in_dataset_dir, out_dataset_dir, resize, framework, dataset_args):
     if not (os.path.exists(in_dataset_dir) and os.listdir(in_dataset_dir)): # check input_dataset
         return print('Dataset is Wrong.')
@@ -144,6 +194,8 @@ def create_dataset(in_dataset_dir, out_dataset_dir, resize, framework, dataset_a
     
     return True
 
+# print log
+# you can chane logging.Formatter or message
 def print_dataset_log(in_dataset_dir, out_dataset_dir, resize, framework, dataset_args):
     # wait until train_map.txt & labels.txt made
     while not dataset_args.log_start:

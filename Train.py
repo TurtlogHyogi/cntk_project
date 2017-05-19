@@ -154,7 +154,6 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
 
             # block_momentum
             #distributed_learner = cntk.distributed.block_momentum_distributed_learner(local_learner,block_size=200)
-            #trainer = cntk.Trainer(network,(loss,error_rate),distributed_learner)
             
             # data_parallel
             distributed_learner = cntk.distributed.data_parallel_distributed_learner(learner = local_learner,       # learner ex)SGD,...
@@ -192,7 +191,7 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
             sample, loss, metric = new_sample, new_loss, new_metric
             network.save(os.path.join(out_model_dir, "{}_{}.dnn".format(network_name,epoch)))
             
-    cntk.distributed.Communicator.finalize()
+    #cntk.distributed.Communicator.finalize()
 
     return print('Train_create finish')
 

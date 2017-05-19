@@ -148,7 +148,15 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
             
             # multi-gpu
             local_learner = cntk.learner.momentum_sgd(network.parameters, lr=lr_schedule, momentum=mm_schedule, l2_regularization_weight=0.002)
-            distributed_learner = cntk.distributed.block_momentum_distributed_learner(local_learner,block_size=200)
+
+            # block_momentum
+            #distributed_learner = cntk.distributed.block_momentum_distributed_learner(local_learner,block_size=200)
+            #trainer = cntk.Trainer(network,(loss,error_rate),distributed_learner)
+            
+            # 1-bit-sgd
+            distributed_learner = cntk.distributed.data_parallel_distributed_learner(learner = local_learner,
+                                                                                     distributed_after = 0,
+                                                                                     num_quantization_bits = 32)
             trainer = cntk.Trainer(network,(loss,error_rate),distributed_learner)
             
         input_map = {

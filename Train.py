@@ -191,7 +191,7 @@ def Train_create(dataset_dir, framework, out_model_dir, max_epochs, mb_size, net
             sample, loss, metric = new_sample, new_loss, new_metric
             network.save(os.path.join(out_model_dir, "{}_{}.dnn".format(network_name,epoch)))
             
-    #cntk.distributed.Communicator.finalize()
+    cntk.distributed.Communicator.finalize()
 
     return print('Train_create finish')
 

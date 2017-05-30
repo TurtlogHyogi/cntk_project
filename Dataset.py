@@ -229,7 +229,6 @@ def print_dataset_log(in_dataset_dir, out_dataset_dir, resize, framework, datase
 def Dataset_result(out_dataset_dir):
     found_dir = os.path.exists(out_dataset_dir)
     found_files = os.listdir(out_dataset_dir)
-    found_dataset = []
 
     if not found_dir:
         return print('Directory is not found')    
@@ -237,15 +236,13 @@ def Dataset_result(out_dataset_dir):
     if not found_files:
         return print('Dataset is not found')
     
-    for found_file in found_files:
-        if os.path.splitext(found_file)[1] in ('.txt','.xml'):
-            found_file = os.path.join(out_dataset_dir,found_file)
-            found_dataset.append(found_file)
 
+    found_dataset = [os.path.join(out_dataset_dir,found_file) for found_file in found_files]
     found_dataset.sort()
 
     return found_dataset
-    
+
+
 def Dataset_create(in_dataset_dir, out_dataset_dir, resize, framework):
     if framework == 3: # CNTK
         # set default dataset_args

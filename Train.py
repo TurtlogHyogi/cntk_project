@@ -214,7 +214,15 @@ w_out_model_dir = Dataset.w_out_dataset_dir + '/model'
 l_out_model_dir = Dataset.l_out_dataset_dir + '/model'
 
 if __name__ == '__main__':
-    print('epoch_size={},out_dim={}'.format(read_line_num(Dataset.Dataset_result(w_out_dataset_dir)[1]),read_line_num(Dataset.Dataset_result(w_out_dataset_dir)[0])))
+    for file in Dataset.Dataset_result(w_out_dataset_dir):
+        if file.find('labels.txt') != -1:
+            labels=file
+        if file.find('map.txt') != -1:
+            map=file
+        if file.find('mean.xml') != -1:
+            mean=file
+
+    print('epoch_size={},out_dim={}'.format(read_line_num(map),read_line_num(labels)))
     Train_create(dataset_dir = w_out_dataset_dir,
                  framework = 3, 
                  out_model_dir = w_out_model_dir, 

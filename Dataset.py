@@ -279,9 +279,9 @@ def Dataset_create(in_dataset_dir, out_dataset_dir, resize, framework):
 
     return True
 
-w_my_dataset_dir = r'D:\Github\cntk_dataset\img'
-w_out_dataset_dir = r'D:\Github\cntk_dataset\outdataset'
-l_my_dataset_dir = r'/root/git/cntk_dataset/img'
+w_my_dataset_dir = r'D:\Github\cntk_dataset\in_dataset'
+w_out_dataset_dir = r'D:\Github\cntk_dataset\out_dataset'
+l_my_dataset_dir = r'/root/git/cntk_dataset/in_dataset'
 l_out_dataset_dir = r'/root/git/cntk_dataset/out_dataset'
 
 if __name__ == '__main__':
